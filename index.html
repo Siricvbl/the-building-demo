@@ -9,6 +9,7 @@
 <link rel="preload" as="image" href="images/scenes/scene_elevator.webp">
 <link rel="preload" as="image" href="images/scenes/scene_stairs.webp">
 <link rel="preload" as="image" href="images/scenes/scene_death.webp">
+<link rel="preload" as="image" href="images/scenes/scene_boy_end.webp">
 <link rel="preload" as="audio" href="audio/kunju.mp3">
 <link rel="preload" as="audio" href="audio/weizhi.mp3">
 <style>
@@ -221,7 +222,7 @@ const CONFIG={
     {id:'S2',name:'鬼打墙力竭',texts:["我一直在走。","楼梯在向上延伸，我一层一层地爬。\n\n但是——","台阶上的数字在重复。\n\n4、4、4。","不管我爬多少层，标识牌上的数字永远是4。","我的腿像灌了铅。\n\n心跳快得像要从喉咙里蹦出来。","我蹲下来，大口喘气。\n\n然后我听到——","身后有脚步声。\n\n不紧不慢。\n\n一直在跟着我。","我站起来继续跑。\n\n腿已经不听使唤了。","摔倒。\n\n爬起来。\n\n再摔倒。","跑不动了。"],deathId:10},
     {id:'S3',name:'Boss来电',texts:["手机突然响了起来。\n\n来电显示：老板。","我才想起来，对，我带了手机。\n\n老板暴躁的声音从电话那头传来：\n\n「发的语音为什么不回？我让你明天早上八点前把营销策划材料发给我，你看到了吗！」","我却像是抓到了救命稻草。\n\n「老板，你听我说，我被困在一栋楼里了，我出不去，求你帮我报个警！」\n\n「这是你不回复工作消息的理由吗？」\n\n「我真的被困在——」\n\n「这是你不回复工作消息的理由吗？」\n\n又是这句。","「老板？」\n\n「这是你不回复工作消息的理由吗？」\n\n老板的声音逐渐变得阴森扭曲。\n\n不，不对劲。\n\n……\n\n我捂住耳朵。\n\n手机掉在了地上。"],deathId:24}
   ],
-  boyTrigger:{probTable:[[11,13,0.02],[14,16,0.05],[17,19,0.10],[20,22,0.20],[23,25,0.40],[26,28,0.70]],sequence:["我又站在了电梯轿厢里。\n\n等等，为什么要说「又」？\n\n我把这无端的念头抛到脑后，好吧，这不重要。\n\n重要的是，电梯里，好像有鬼。","不对劲是从电梯停在4楼时开始的。\n\n「叮——」第四层到了。\n\n可我根本没有按这个楼层。","电梯门缓缓打开，门外的寒气袭面而来，我忍不住打了个寒颤。\n\n四楼的走廊上一片死寂，空无一人。","三秒，五秒，十秒过去了，电梯门却丝毫没有要合上的意思，刺耳的警报声在狭小的轿厢里骤然响起。","「电梯是卡住了吗？」\n\n我喃喃自语，伸出手去按关门键，却听到冰冷的电子音提示：「电梯已超载，请后进入的乘客退出。」","与此同时，电梯显示屏上，数字「4」疯狂闪烁，下方「满员」两个鲜红的大字格外刺眼。\n\n我的手刹时僵住。","后颈凉飕飕的，好像有什么东西在吹气，似有若无。\n\n轿厢顶上有液体滴落。\n\n潮湿，黏糊，冰冷，滴落在我的头顶。\n\n我的心猛地一紧，直觉最好不要抬眼看。","然而，五秒后，余光中，一抹暗红顺着我的发尖缓缓滑落，「啪哒」一声，在地板绽出一朵殷红的花。\n\n血！！！\n\n我要疯了。\n\n这电梯绝对没法再呆了！","我在心里暗自数了三个数，然后猛地一跺脚，用尽全身力气跳出轿厢，慌不择路地躲进了旁边的楼梯间，玩儿了命似的向上跑去。","逃跑中，我似乎听到了谁在笑，那声音像指甲划过纸面。\n\n不是幻听！\n\n因为紧接着，楼下传来了高跟鞋爬楼的声音。","咔哒——咔哒——\n\n每一声都仿佛踩在我的心脏上。\n\n快逃！快逃！\n\n我在心里尖叫，可双腿却像灌了铅一样，越来越重。","那声音越来越近，某个恐怖的存在正步步紧逼！\n\n要被追上了吗？\n\n绝望的情绪将我吞没，我几乎放弃挣扎。","突然，黑暗中我被谁大力扯了一把，扯进了楼梯间拐角的暗门里。\n\n一只手捂住了我的嘴。","黑暗中，一个少年的声音贴着我耳边响起——\n\n「别出声。」"],endText:"【第一幕 · 电梯循环 · 完】",endSequence:["一点火光亮起。\n\n蜡烛。\n\n一个少年站在黑暗中，手里举着一根蜡烛。\n\n火光映出他苍白的脸。","他看着我。","「我等你很久了。」"]},
+  boyTrigger:{probTable:[[11,15,0.01],[16,20,0.03],[21,25,0.05],[26,30,0.10]],sequence:["我又站在了电梯轿厢里。\n\n等等，为什么要说「又」？\n\n我把这无端的念头抛到脑后，好吧，这不重要。\n\n重要的是，电梯里，好像有鬼。","不对劲是从电梯停在4楼时开始的。\n\n「叮——」第四层到了。\n\n可我根本没有按这个楼层。","电梯门缓缓打开，门外的寒气袭面而来，我忍不住打了个寒颤。\n\n四楼的走廊上一片死寂，空无一人。","三秒，五秒，十秒过去了，电梯门却丝毫没有要合上的意思，刺耳的警报声在狭小的轿厢里骤然响起。","「电梯是卡住了吗？」\n\n我喃喃自语，伸出手去按关门键，却听到冰冷的电子音提示：「电梯已超载，请后进入的乘客退出。」","与此同时，电梯显示屏上，数字「4」疯狂闪烁，下方「满员」两个鲜红的大字格外刺眼。\n\n我的手刹时僵住。","后颈凉飕飕的，好像有什么东西在吹气，似有若无。\n\n轿厢顶上有液体滴落。\n\n潮湿，黏糊，冰冷，滴落在我的头顶。\n\n我的心猛地一紧，直觉最好不要抬眼看。","然而，五秒后，余光中，一抹暗红顺着我的发尖缓缓滑落，「啪哒」一声，在地板绽出一朵殷红的花。\n\n血！！！\n\n我要疯了。\n\n这电梯绝对没法再呆了！","我在心里暗自数了三个数，然后猛地一跺脚，用尽全身力气跳出轿厢，慌不择路地躲进了旁边的楼梯间，玩儿了命似的向上跑去。","逃跑中，我似乎听到了谁在笑，那声音像指甲划过纸面。\n\n不是幻听！\n\n因为紧接着，楼下传来了高跟鞋爬楼的声音。","咔哒——咔哒——\n\n每一声都仿佛踩在我的心脏上。\n\n快逃！快逃！\n\n我在心里尖叫，可双腿却像灌了铅一样，越来越重。","那声音越来越近，某个恐怖的存在正步步紧逼！\n\n要被追上了吗？\n\n绝望的情绪将我吞没，我几乎放弃挣扎。","突然，黑暗中我被谁大力扯了一把，扯进了楼梯间拐角的暗门里。\n\n一只手捂住了我的嘴。","黑暗中，一个少年的声音贴着我耳边响起——\n\n「别出声。」"],endText:"【第一幕 · 电梯循环 · 完】",endSequence:["一点火光亮起。\n\n蜡烛。\n\n一个少年站在黑暗中，手里举着一根蜡烛。\n\n火光映出他苍白的脸。","他看着我。","「我等你很久了。」"]},
   deaths:{1:'坠入深渊',2:'特立独行',3:'路遇歹人',4:'触电身亡',5:'电梯冲顶',6:'电梯坠落',7:'电梯门剪切',8:'楼梯摔倒',9:'看不见的乘客',10:'鬼打墙',11:'不尊老',12:'空巢老人的陪伴',13:'妈妈的问候',14:'午夜来电',15:'超载',16:'婴儿的啼哭',17:'入棺',18:'欢迎来到地狱',19:'高跟鞋的报复',20:'高跟鞋的喜爱',21:'红色高跟鞋',22:'镜中人',23:'铁栅栏',24:'Boss来电'},
   emptyFloors:[2,3,10,12,15,17,19,21,27,29]
 };
@@ -372,7 +373,7 @@ function pickPanel(){
 function rollBoy(){
   const l=State.loopCount;
   if(l<=10) return false;
-  if(l>=29) return true;
+  if(l>=31) return true;
   for(const [min,max,prob] of CONFIG.boyTrigger.probTable){ if(l>=min&&l<=max) return Math.random()<prob; }
   return false;
 }
@@ -542,7 +543,7 @@ function startLoop(){
   State.heelsIgnored=0; State.wheelchairActive=false;
   State.badgeManEncountered=false; State.badgeForced=false;
   State.break20Presses=0; State._badgeRefuseCount=0;
-  State.boyTriggered=State._forceBoy||rollBoy();State._forceBoy=false;
+  State.boyTriggered=rollBoy();
   Save.save(); updateDebug(); updateLoopBar();
   // 少年触发：直接进入演出序列，不进电梯厅
   if(State.boyTriggered){
@@ -1784,7 +1785,7 @@ document.addEventListener('click',(e)=>{
 
 /* ========== DEBUG ========== */
 const DBG={
-  forceBoy(){ document.getElementById('menu-panel').classList.remove('visible'); State._forceBoy=true; typewriter('[DEBUG] 少年触发已强制。下次失去意识后触发。',()=>{}); },
+  forceBoy(){ document.getElementById('menu-panel').classList.remove('visible'); State.boyTriggered=true; typewriter('[DEBUG] 少年触发已强制。下次进电梯将触发。',()=>{}); },
   skipTo31(){ document.getElementById('menu-panel').classList.remove('visible'); State.loopCount=31; Save.save(); typewriter('[DEBUG] 已跳到循环31。下次失去意识后触发。',()=>{}); },
   resetSave(){ Save.reset(); location.reload(); },
   showDeathPicker(){
