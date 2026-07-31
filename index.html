@@ -12,7 +12,6 @@
 <link rel="preload" as="image" href="images/scenes/scene_boy_end.webp">
 <link rel="preload" as="audio" href="audio/kunju.mp3">
 <link rel="preload" as="audio" href="audio/weizhi.mp3">
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 :root{--bg:#0f0f14;--bg-deep:#08080c;--gold:#b98a38;--gold-bright:#d4a84a;--text:#e8e4dc;--text-dim:#8a857c;--blood:#8b1a1a;--blood-bright:#c0392b}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -94,9 +93,9 @@ button.choice:hover{border-color:var(--gold);background:rgba(185,138,56,0.1);col
 #codex-close{position:fixed;top:16px;right:16px;z-index:201;font-size:22px;cursor:pointer;background:rgba(15,15,20,0.8);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:6px 12px;color:var(--text)}
 #codex-close:hover{border-color:var(--gold);color:var(--gold)}
 /* —— 结算页面 —— */
-#settlement-overlay{position:fixed;inset:0;z-index:210;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,rgba(26,21,16,0.85),rgba(15,15,20,0.95) 50%,rgba(8,8,12,0.98)),url('images/scenes/scene_boy_end.webp') center/cover no-repeat fixed;overflow-y:auto}
+#settlement-overlay{position:fixed;inset:0;z-index:210;display:none;flex-direction:column;align-items:center;background:radial-gradient(ellipse at 50% 40%,rgba(26,21,16,0.85),rgba(15,15,20,0.95) 50%,rgba(8,8,12,0.98)),url('images/scenes/scene_boy_end.webp') center/cover no-repeat fixed;overflow-y:auto}
 #settlement-overlay.visible{display:flex;animation:fadeIn 0.8s}
-#settlement-content{max-width:800px;width:100%;padding:40px 30px;text-align:center}
+#settlement-content{max-width:800px;width:100%;padding:60px 30px 40px;text-align:center;margin:auto 0}
 .settlement-title{font-size:36px;color:var(--gold);letter-spacing:12px;margin-bottom:6px;text-shadow:0 0 20px rgba(185,138,56,0.3)}
 .settlement-subtitle{font-size:18px;color:var(--text-dim);letter-spacing:4px;margin-bottom:24px}
 .settlement-progress-wrap{margin-bottom:28px}
@@ -106,10 +105,9 @@ button.choice:hover{border-color:var(--gold);background:rgba(185,138,56,0.1);col
 .settlement-grid .codex-cell{aspect-ratio:1}
 .settlement-actions{display:flex;flex-direction:column;align-items:center;gap:14px}
 .settlement-btn{font-family:inherit;font-size:22px;cursor:pointer;letter-spacing:4px;padding:12px 48px;border-radius:2px;transition:all 0.2s}
-.settlement-btn.save{color:var(--gold);background:rgba(15,15,20,0.8);border:1px solid var(--gold)}
-.settlement-btn.save:hover{background:rgba(185,138,56,0.15);color:var(--gold-bright)}
 .settlement-btn.continue{color:var(--text-dim);background:transparent;border:1px solid rgba(138,133,124,0.3)}
 .settlement-btn.continue:hover{border-color:var(--text-dim);color:var(--text)}
+.settlement-hint{font-size:18px;color:var(--gold);letter-spacing:3px;opacity:0.8}
 .settlement-warning{font-size:16px;color:var(--text-dim);letter-spacing:2px;opacity:0.6;margin-top:4px}
 
 /* —— 标题画面图鉴按钮 —— */
@@ -150,8 +148,14 @@ button.choice:hover{border-color:var(--gold);background:rgba(185,138,56,0.1);col
 #save-close{position:fixed;top:16px;right:16px;z-index:201;font-size:22px;cursor:pointer;background:rgba(15,15,20,0.8);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:6px 12px;color:var(--text)}
 #save-close:hover{border-color:var(--gold);color:var(--gold)}
 </style>
-<script>/* preload all game images at page load */
-(function(){var imgs=['characters/char_badge','characters/char_boy','characters/char_coffee','characters/char_elderly','characters/char_hooded','characters/char_susu'];for(var i=1;i<=24;i++){var s=String(i).padStart(2,'0');imgs.push('deaths/death_'+s);}imgs.forEach(function(p){var im=new Image();im.src='images/'+p+'.webp';});})();
+<script>/* preload all game images + audio at page load */
+window._audioCache={};
+(function(){
+  var imgs=['characters/char_badge','characters/char_boy','characters/char_coffee','characters/char_elderly','characters/char_hooded','characters/char_susu'];
+  for(var i=1;i<=24;i++){var s=String(i).padStart(2,'0');imgs.push('deaths/death_'+s);}
+  imgs.forEach(function(p){var im=new Image();im.src='images/'+p+'.webp';});
+  ['kunju','weizhi'].forEach(function(t){var a=new Audio('audio/'+t+'.mp3');a.preload='auto';a.loop=true;a.volume=0;window._audioCache[t]=a;});
+})();
 </script>
 </head>
 <body>
@@ -183,7 +187,7 @@ button.choice:hover{border-color:var(--gold);background:rgba(185,138,56,0.1);col
 <div id="death-overlay"></div>
 <div id="codex-overlay"><button id="codex-close">✕</button><div class="codex-header"><h2>循环图鉴</h2><p>每一種循环，都是一條出路</p><div class="codex-progress" id="codex-progress"></div></div><div id="codex-grid"></div></div>
 <div id="save-overlay"><button id="save-close">✕</button><div class="codex-header"><h2>存档 / 读档</h2><p>选择一个存档位进行保存或读取</p></div><div id="save-slots"></div></div>
-<div id="settlement-overlay"><div id="settlement-content"><div class="settlement-title">循环图鉴 · 结算</div><div class="settlement-subtitle">第一幕 · 电梯循环 · 完</div><div class="settlement-progress-wrap"><span class="settlement-count" id="settlement-count">0</span><span class="settlement-total">/24</span></div><div class="settlement-grid" id="settlement-grid"></div><div class="settlement-actions"><button class="settlement-btn save" id="settlement-save-btn">保存留念</button><button class="settlement-btn continue" id="settlement-continue-btn">继续</button><p class="settlement-warning">继续后将清除全部图鉴，重新开始</p></div></div></div>
+<div id="settlement-overlay"><div id="settlement-content"><div class="settlement-title">循环图鉴 · 结算</div><div class="settlement-progress-wrap"><span class="settlement-count" id="settlement-count">0</span><span class="settlement-total">/24</span></div><div class="settlement-grid" id="settlement-grid"></div><div class="settlement-actions"><p class="settlement-hint">📸 长按或截图保存这一刻</p><button class="settlement-btn continue" id="settlement-continue-btn">继续</button><p class="settlement-warning">继续后将清除全部图鉴，重新开始</p></div></div></div>
 <script>
 const CONFIG={
   loop1:{
@@ -264,7 +268,7 @@ const Audio={ctx:null,enabled:true,volume:0.6,ambientOsc:null,ambientGain:null,h
 
 const BGM={
   audio:null,current:null,fadeTimer:null,targetVol:0.4,
-  _cache:{},
+  _cache:window._audioCache||{},
   _get(track){
     if(!this._cache[track]){
       const a=new window.Audio('audio/'+track+'.mp3');
@@ -1797,9 +1801,6 @@ document.getElementById('codex-close').addEventListener('click',()=>{
 document.getElementById('save-close').addEventListener('click',()=>{
   Audio.click(); hideSavePanel();
 });
-document.getElementById('settlement-save-btn').addEventListener('click',()=>{
-  Audio.click(); saveSettlement();
-});
 document.getElementById('settlement-continue-btn').addEventListener('click',()=>{
   Audio.click();
   var btn=document.getElementById('settlement-continue-btn');
@@ -1913,33 +1914,6 @@ function showSettlement(){
     grid.appendChild(cell);
   }
   overlay.classList.add('visible');
-}
-function saveSettlement(){
-  var btn=document.getElementById('settlement-save-btn');
-  var originalText=btn.textContent;
-  btn.textContent='生成中...'; btn.disabled=true;
-  var target=document.getElementById('settlement-content');
-  if(typeof html2canvas==='undefined'){
-    btn.textContent='截图库未加载'; 
-    setTimeout(function(){btn.textContent=originalText;btn.disabled=false;},2000);
-    return;
-  }
-  html2canvas(target,{
-    backgroundColor:'#0f0f14',
-    scale:2,
-    useCORS:true,
-    allowTaint:true
-  }).then(function(canvas){
-    var link=document.createElement('a');
-    link.download='大楼-循环图鉴-'+State.deathLog.size+'of24.png';
-    link.href=canvas.toDataURL('image/png');
-    link.click();
-    btn.textContent='已保存 ✓';
-    setTimeout(function(){btn.textContent=originalText;btn.disabled=false;},2000);
-  }).catch(function(){
-    btn.textContent='保存失败';
-    setTimeout(function(){btn.textContent=originalText;btn.disabled=false;},2000);
-  });
 }
 
 /* --- 存档/读档面板 --- */
