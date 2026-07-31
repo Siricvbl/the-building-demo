@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>大楼 · 第一幕：电梯循环</title>
+<link rel="preload" as="image" href="images/scenes/scene_title.webp">
+<link rel="preload" as="image" href="images/scenes/scene_lobby.webp">
+<link rel="preload" as="image" href="images/scenes/scene_elevator.webp">
+<link rel="preload" as="image" href="images/scenes/scene_stairs.webp">
+<link rel="preload" as="image" href="images/scenes/scene_death.webp">
+<link rel="preload" as="audio" href="audio/kunju.mp3">
+<link rel="preload" as="audio" href="audio/weizhi.mp3">
 <style>
 :root{--bg:#0f0f14;--bg-deep:#08080c;--gold:#b98a38;--gold-bright:#d4a84a;--text:#e8e4dc;--text-dim:#8a857c;--blood:#8b1a1a;--blood-bright:#c0392b}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -232,14 +239,22 @@ const Audio={ctx:null,enabled:true,volume:0.6,ambientOsc:null,ambientGain:null,h
 
 const BGM={
   audio:null,current:null,fadeTimer:null,targetVol:0.4,
+  _cache:{},
+  _get(track){
+    if(!this._cache[track]){
+      const a=new window.Audio('audio/'+track+'.mp3');
+      a.loop=true;a.preload='auto';a.volume=0;
+      this._cache[track]=a;
+    }
+    return this._cache[track];
+  },
   play(track){
     if(this.current===track && this.audio && !this.audio.paused) return;
     this.fadeTo(0,800,()=>{
-      if(this.audio){this.audio.pause();this.audio=null;}
+      if(this.audio){this.audio.pause();}
       this.current=track;
       if(!Audio.enabled) return;
-      this.audio=new window.Audio('audio/'+track+'.mp3');
-      this.audio.loop=true;
+      this.audio=this._get(track);
       this.audio.volume=0;
       this.audio.play().catch(function(){});
       this.targetVol=Audio.volume;
