@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大楼 · 第一幕：电梯循环</title>
+<style>
+:root{--bg:#0f0f14;--bg-deep:#08080c;--gold:#b98a38;--gold-bright:#d4a84a;--text:#e8e4dc;--text-dim:#8a857c;--blood:#8b1a1a;--blood-bright:#c0392b}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text);font-family:"Songti SC","STSong","SimSun","宋体","Noto Serif SC",serif;font-size:22px;min-height:100vh;overflow-x:hidden;transition:background 0.8s ease}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,0.55) 100%);z-index:1}
+body.scene-title{background:radial-gradient(ellipse at 30% 40%,rgba(26,21,16,0.7),rgba(15,15,20,0.85) 50%,rgba(8,8,12,0.95)),url('images/scenes/scene_title.webp') center/cover no-repeat fixed}
+body.scene-lobby{background:radial-gradient(ellipse at 50% 50%,rgba(20,18,16,0.75),rgba(15,15,20,0.85) 50%,rgba(8,8,12,0.95)),url('images/scenes/scene_lobby.webp') center/cover no-repeat fixed}
+body.scene-elevator{background:radial-gradient(ellipse at 50% 30%,rgba(18,20,26,0.75),rgba(10,12,18,0.85) 50%,rgba(6,8,12,0.95)),url('images/scenes/scene_elevator.webp') center/cover no-repeat fixed}
+body.scene-stairs{background:radial-gradient(ellipse at 50% 50%,rgba(16,16,18,0.75),rgba(10,10,12,0.85) 50%,rgba(5,5,5,0.95)),url('images/scenes/scene_stairs.webp') center/cover no-repeat fixed}
+body.scene-death{background:radial-gradient(ellipse at 50% 50%,rgba(26,5,5,0.75),rgba(15,2,2,0.85) 50%,rgba(0,0,0,0.95)),url('images/scenes/scene_death.webp') center/cover no-repeat fixed}
+body.scene-boy{background:radial-gradient(ellipse at 50% 60%,rgba(26,18,8,0.75),rgba(15,10,4,0.85) 50%,rgba(0,0,0,0.95)),url('images/scenes/scene_boy_end.webp') center/cover no-repeat fixed}
+#title-screen{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 40%,rgba(26,21,16,0.7),rgba(15,15,20,0.88) 60%,rgba(8,8,12,0.96)),url('images/scenes/scene_title.webp') center/cover no-repeat;transition:opacity 0.6s}
+#title-screen.hidden{opacity:0;pointer-events:none}
+#title-screen h1{font-size:48px;color:var(--gold);letter-spacing:12px;margin-bottom:8px;text-shadow:0 0 20px rgba(185,138,56,0.3)}
+#title-screen p{color:var(--text-dim);font-size:18px;letter-spacing:3px;margin-bottom:40px}
+#start-btn{font-family:inherit;font-size:22px;color:var(--text);background:transparent;border:1px solid var(--gold);padding:12px 48px;cursor:pointer;letter-spacing:4px;transition:all 0.3s}
+#start-btn:hover{background:rgba(185,138,56,0.15);color:var(--gold-bright)}
+#game{position:relative;z-index:2;max-width:900px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:24px 22px 48px}
+header.loop-bar{text-align:center;color:var(--gold);font-size:18px;letter-spacing:5px;padding:6px 0 20px;border-bottom:1px solid rgba(185,138,56,0.18);margin-bottom:26px;min-height:20px;display:flex;justify-content:space-between;align-items:center}
+header.loop-bar .floor-info{color:var(--text-dim)}
+#narrative{flex:1;line-height:1.95;letter-spacing:1.2px;white-space:pre-wrap;min-height:220px;text-shadow:0 0 8px rgba(0,0,0,0.6)}
+#narrative p{margin-bottom:0.8em}
+#choices{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+button.choice{font-family:inherit;font-size:22px;color:var(--text);background:rgba(15,15,20,0.8);border:1px solid rgba(185,138,56,0.3);padding:14px 28px;cursor:pointer;letter-spacing:2px;text-align:left;transition:all 0.2s;border-radius:2px}
+button.choice:hover{border-color:var(--gold);background:rgba(185,138,56,0.1);color:var(--gold-bright)}
+.panel-wrap{margin-top:16px}
+.panel-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;max-width:600px}
+.panel-btn{font-family:inherit;font-size:20px;color:var(--text);background:rgba(20,20,28,0.9);border:1px solid rgba(185,138,56,0.2);padding:12px 0;cursor:pointer;text-align:center;border-radius:2px;transition:all 0.15s}
+.panel-btn:hover{border-color:var(--gold);background:rgba(185,138,56,0.1)}
+.panel-btn.glow20{box-shadow:0 0 8px rgba(139,26,26,0.4);border-color:rgba(139,26,26,0.3)}
+.panel-btn.crack{animation:crack 0.3s}
+.panel-btn:disabled{opacity:0.3;pointer-events:none}
+.hint{color:var(--text-dim);font-size:18px;margin-top:12px;text-align:center}
+@keyframes crack{0%{transform:scale(1)}50%{transform:scale(1.1);background:rgba(139,26,26,0.5)}100%{transform:scale(0.95)}}
+.shaking{animation:shake 0.4s infinite}
+@keyframes shake{0%,100%{transform:translate(0)}25%{transform:translate(-3px,2px)}75%{transform:translate(3px,-2px)}}
+.dying{filter:blur(3px) brightness(0.3);transition:filter 1s}
+.end-title{font-size:32px;color:var(--gold);text-align:center;letter-spacing:8px;margin:40px 0}
+#audio-toggle{position:fixed;top:16px;right:16px;z-index:50;font-size:20px;cursor:pointer;background:rgba(15,15,20,0.8);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:6px 10px;color:var(--text)}
+#debug-panel{position:fixed;bottom:16px;right:16px;z-index:50;background:rgba(8,8,12,0.95);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:12px;font-size:14px;color:var(--text-dim);max-width:280px;display:none}
+#debug-panel.visible{display:block}
+#debug-panel h3{color:var(--gold);font-size:14px;margin-bottom:8px}
+#debug-panel .dbg-btn{font-size:14px;padding:4px 8px;margin:2px;cursor:pointer;background:rgba(185,138,56,0.1);border:1px solid rgba(185,138,56,0.3);color:var(--text);border-radius:2px}
+#debug-panel .dbg-btn:hover{background:rgba(185,138,56,0.2)}
+#debug-toggle{position:fixed;bottom:16px;right:16px;z-index:51;font-size:14px;cursor:pointer;background:rgba(8,8,12,0.8);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:4px 8px;color:var(--gold)}
+
+/* —— 死亡仪式弹窗 —— */
+#death-overlay{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(26,5,5,0.8) 0%,rgba(10,2,2,0.92) 50%,rgba(0,0,0,1) 100%),url('images/scenes/scene_death.webp') center/cover no-repeat;opacity:0;transition:opacity 0.8s}
+#death-overlay.visible{display:flex;opacity:1}
+#death-overlay .death-label{font-size:18px;color:var(--text-dim);letter-spacing:6px;margin-bottom:12px;opacity:0;animation:fadeUp 0.8s 0.3s forwards}
+#death-overlay .death-name{font-size:42px;color:var(--blood-bright);letter-spacing:10px;text-shadow:0 0 30px rgba(192,57,43,0.5);opacity:0;animation:fadeUp 1s 0.6s forwards;margin-bottom:20px}
+#death-overlay .death-loop{font-size:18px;color:var(--gold);letter-spacing:4px;opacity:0;animation:fadeUp 0.8s 1.2s forwards;margin-bottom:30px}
+#death-overlay .unlock-badge{font-size:20px;color:var(--gold-bright);border:1px solid var(--gold);padding:8px 24px;letter-spacing:3px;opacity:0;animation:fadeUp 0.8s 1.6s forwards;margin-bottom:30px;border-radius:2px;text-shadow:0 0 10px rgba(212,168,74,0.3)}
+#death-overlay .death-btn{font-family:inherit;font-size:22px;color:var(--text-dim);background:transparent;border:none;cursor:pointer;letter-spacing:4px;opacity:0;animation:fadeUp 0.8s 2.2s forwards;transition:color 0.2s;margin-top:10px}
+#death-overlay .death-btn:hover{color:var(--gold)}
+#death-overlay .death-divider{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--blood),transparent);opacity:0;animation:fadeUp 0.8s 0.9s forwards;margin-bottom:20px}
+#death-overlay .death-art{width:220px;height:220px;object-fit:cover;border-radius:4px;border:1px solid rgba(185,138,56,0.3);opacity:0;animation:fadeUp 1s 0.3s forwards;margin-bottom:20px;box-shadow:0 0 30px rgba(0,0,0,0.8)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+
+/* —— 循环图鉴 —— */
+#codex-overlay{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;background:radial-gradient(ellipse at 30% 20%,rgba(18,17,10,0.88),rgba(15,15,20,0.92) 50%,rgba(8,8,12,0.98)),url('images/scenes/scene_title.webp') center/cover no-repeat fixed;overflow-y:auto}
+#codex-overlay.visible{display:flex}
+#codex-overlay .codex-header{text-align:center;padding:30px 20px 10px;flex-shrink:0}
+#codex-overlay .codex-header h2{font-size:32px;color:var(--gold);letter-spacing:8px;margin-bottom:6px}
+#codex-overlay .codex-header p{color:var(--text-dim);font-size:18px;letter-spacing:2px}
+#codex-overlay .codex-progress{color:var(--gold);font-size:20px;margin-top:8px}
+#codex-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:20px 30px 40px;max-width:800px;margin:0 auto;width:100%}
+.codex-cell{aspect-ratio:1;border:1px solid rgba(185,138,56,0.15);background:rgba(8,8,12,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:2px;padding:8px;text-align:center;transition:all 0.2s;position:relative;overflow:hidden}
+.codex-cell.unlocked{border-color:rgba(185,138,56,0.4);background-size:cover;background-position:center}
+.codex-cell.unlocked .cell-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,8,12,0.2) 0%,rgba(8,8,12,0.82) 65%,rgba(8,8,12,0.95) 100%)}
+.codex-cell.unlocked .cell-num,.codex-cell.unlocked .cell-name{position:relative;z-index:1}
+.codex-cell.unlocked:hover{border-color:var(--gold);transform:scale(1.05)}
+.codex-cell.unlocked:hover .cell-overlay{background:linear-gradient(to bottom,rgba(8,8,12,0.05) 0%,rgba(8,8,12,0.6) 65%,rgba(8,8,12,0.88) 100%)}
+.codex-cell .cell-num{font-size:14px;color:var(--text-dim);margin-bottom:4px}
+.codex-cell.unlocked .cell-num{color:var(--gold)}
+.codex-cell .cell-name{font-size:16px;color:var(--text-dim);line-height:1.3}
+.codex-cell.unlocked .cell-name{color:var(--text)}
+.codex-cell.locked .cell-name{color:rgba(138,133,124,0.3)}
+#codex-close{position:fixed;top:16px;right:16px;z-index:201;font-size:22px;cursor:pointer;background:rgba(15,15,20,0.8);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:6px 12px;color:var(--text)}
+#codex-close:hover{border-color:var(--gold);color:var(--gold)}
+
+/* —— 标题画面图鉴按钮 —— */
+#codex-btn-title{font-family:inherit;font-size:18px;color:var(--text-dim);background:transparent;border:1px solid rgba(185,138,56,0.2);padding:8px 24px;cursor:pointer;letter-spacing:3px;margin-top:16px;transition:all 0.3s}
+#codex-btn-title:hover{border-color:var(--gold);color:var(--gold-bright)}
+
+#click-hint{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);z-index:40;color:var(--text-dim);font-size:16px;letter-spacing:3px;opacity:0;transition:opacity 0.5s;pointer-events:none;animation:pulse 2s infinite}
+#click-hint.visible{opacity:0.6}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:0.7}}
+
+/* —— 左上角汉堡菜单 —— */
+#menu-btn{position:fixed;top:16px;left:16px;z-index:50;font-size:20px;cursor:pointer;background:rgba(15,15,20,0.8);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:6px 12px;color:var(--gold);transition:all 0.2s}
+#menu-btn:hover{border-color:var(--gold);background:rgba(185,138,56,0.1)}
+#menu-panel{position:fixed;top:52px;left:16px;z-index:50;background:rgba(8,8,12,0.97);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:8px;min-width:180px;display:none;flex-direction:column;gap:2px}
+#menu-panel.visible{display:flex}
+.menu-item{font-family:inherit;font-size:18px;color:var(--text);background:transparent;border:none;cursor:pointer;padding:10px 16px;text-align:left;letter-spacing:2px;border-radius:2px;transition:all 0.15s}
+.menu-item:hover{background:rgba(185,138,56,0.1);color:var(--gold-bright)}
+.menu-sep{height:1px;background:rgba(185,138,56,0.15);margin:4px 8px}
+.menu-label{font-size:14px;color:var(--text-dim);padding:4px 16px;letter-spacing:1px}
+.menu-slider-row{display:flex;align-items:center;gap:8px;padding:6px 16px}
+
+/* —— 存档面板 —— */
+#save-overlay{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;background:radial-gradient(ellipse at 30% 20%,#12110a,#0f0f14 50%,#08080c);overflow-y:auto}
+#save-overlay.visible{display:flex}
+#save-slots{padding:20px 30px 40px;max-width:600px;margin:0 auto;width:100%}
+.save-slot{border:1px solid rgba(185,138,56,0.2);background:rgba(8,8,12,0.6);padding:20px;margin-bottom:12px;border-radius:2px;transition:all 0.2s}
+.save-slot:hover{border-color:rgba(185,138,56,0.4)}
+.save-slot.empty{border-style:dashed}
+.save-slot-info{flex:1}
+.save-slot-name{font-size:20px;color:var(--gold);letter-spacing:2px;margin-bottom:4px}
+.save-slot-detail{font-size:16px;color:var(--text-dim);line-height:1.5}
+.save-slot-actions{display:flex;gap:8px;margin-top:12px}
+.save-slot-btn{font-family:inherit;font-size:16px;padding:6px 16px;cursor:pointer;background:rgba(185,138,56,0.1);border:1px solid rgba(185,138,56,0.3);color:var(--text);border-radius:2px;transition:all 0.15s}
+.save-slot-btn:hover{background:rgba(185,138,56,0.2);border-color:var(--gold)}
+.save-slot-btn.danger{border-color:rgba(139,26,26,0.3);color:var(--blood-bright)}
+.save-slot-btn.danger:hover{background:rgba(139,26,26,0.15)}
+#save-close{position:fixed;top:16px;right:16px;z-index:201;font-size:22px;cursor:pointer;background:rgba(15,15,20,0.8);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:6px 12px;color:var(--text)}
+#save-close:hover{border-color:var(--gold);color:var(--gold)}
+</style>
+</head>
+<body>
+<div id="title-screen"><h1>大楼</h1><p>第一幕 · 电梯循环</p><button id="start-btn">开始游戏</button><button id="codex-btn-title">循环图鉴</button></div>
+<div id="game"><header class="loop-bar"><span id="loopBar"></span><span id="floorInfo" class="floor-info"></span></header><main class="stage"><div id="narrative"></div><div id="choices"></div></main></div>
+<div id="click-hint">点击继续 ▸</div>
+<button id="menu-btn">☰</button>
+<div id="menu-panel">
+  <div class="menu-label">循环第 <span id="menu-loop">1</span> 次</div>
+  <div class="menu-sep"></div>
+  <button class="menu-item" onclick="Audio.click();showDeathCodex()">📖 循环图鉴</button>
+  <button class="menu-item" onclick="Audio.click();showSavePanel()">💾 存档 / 读档</button>
+  <div class="menu-sep"></div>
+  <button class="menu-item" onclick="Audio.click();returnToTitle()">🏠 返回标题</button>
+  <button class="menu-item" onclick="Audio.click();confirmReset()">🗑 重置存档</button>
+  <div class="menu-sep"></div>
+  <div class="menu-label">音效</div>
+  <button class="menu-item" id="menu-audio-toggle" onclick="toggleAudioFromMenu()">🔊 开启</button>
+  <div class="menu-slider-row"><span style="font-size:14px;color:var(--text-dim)">音量</span><input type="range" id="menu-volume" min="0" max="100" value="60" style="flex:1;accent-color:var(--gold)" oninput="setVolume(this.value)"></div>
+  <div class="menu-sep"></div>
+  <div class="menu-label" style="display:none">调试</div>
+  <button class="menu-item" style="display:none" onclick="Audio.click();DBG.forceBoy()">⚡ 强制少年</button>
+  <button class="menu-item" style="display:none" onclick="Audio.click();DBG.skipTo31()">⏩ 跳到循环31</button>
+  <button class="menu-item" style="display:none" onclick="Audio.click();DBG.showDeathPicker()">🎯 触发指定死法</button>
+</div>
+<button id="audio-toggle" style="display:none">🔊</button>
+<button id="debug-toggle" style="display:none">🔧</button>
+<div id="debug-panel" style="display:none"></div>
+<div id="death-overlay"></div>
+<div id="codex-overlay"><button id="codex-close">✕</button><div class="codex-header"><h2>循环图鉴</h2><p>每一種循环，都是一條出路</p><div class="codex-progress" id="codex-progress"></div></div><div id="codex-grid"></div></div>
+<div id="save-overlay"><button id="save-close">✕</button><div class="codex-header"><h2>存档 / 读档</h2><p>选择一个存档位进行保存或读取</p></div><div id="save-slots"></div></div>
+<script>
+const CONFIG={
+  loop1:{
+    paragraphs:[
+      "23:27。\n\n我叫苏苏。\n\n在市中心的广告公司上班，今天又加班到这个时候。",
+      "这是一栋老旧的公寓楼，三十层，外墙的瓷砖掉了大半，楼道里的灯忽明忽暗。\n\n但离公司近，月租也便宜，我就租在二十楼。",
+      "好累。\n\n回家先洗个热水澡，还有一份方案明天要交。\n\n老板的语音消息还在响，我没点开。",
+      "电梯厅的灯是暖黄色的，很旧的那种白炽灯，把墙壁映得发黄。\n\n走廊尽头有一面镜子，镜面裂了一条缝，我每次经过都不太敢看。",
+      "我站在电梯门前，按了上行键。\n\n电梯来了。\n\n门开了。",
+      "轿厢里的灯管闪了两下才亮。\n\n我走进去，习惯性地伸手去按20。\n\n——咦？\n\n20的按键不在了。",
+      "我以为我眼睛花了。\n\n凑近面板仔细看，1到30的按键整整齐齐，唯独20的位置——是一片空白。\n\n不是被抠掉了，就是……从来没有过。\n\n我又看了一遍。\n\n真的没有。",
+      "电梯门合拢了。\n\n我还在面板上焦急地找20楼，翻来覆去地找，就是没有。\n\n这时候我才意识到——轿厢在动。\n\n在向上移动。\n\n我明明没有按任何楼层。",
+      "显示屏上的数字在跳——15、18、22、25——快到我来不及看清。\n\n28。\n\n29。\n\n30。\n\n还在加速。\n\n头顶的楼板越来越近。\n\n钢缆发出尖锐的嘶鸣。"
+    ],
+    crashText:"「砰——」"
+  },
+  loop2:{
+    paragraphs:[
+      "电梯厅里灯光昏黄，吊灯在灰色的水泥地板上打出浅浅的影。\n\n好像刚才的一切都是幻觉，除了我的心跳快得要连成一片。",
+      "叮！\n\n轿厢门毫无征兆地开启，我下意识后退了一步。\n\n完好无损的轿厢，顶灯的白光有些刺眼，轿厢的镜面映出我毫无血色的脸。",
+      "进？\n\n还是不进？\n\n刚才那一切，真的只是幻觉吗？\n\n我努力回想轿厢冲顶时的最后一刻，却突然发现——关于那一刻，我没有任何记忆。\n\n所以……是幻觉……吧。",
+      "真的好累了，想回去休息，明早还有项目汇报。\n\n这样想着，我拍了拍脸，告诉自己别胡思乱想，迈开腿向电梯走去。",
+      "30个按键整整齐齐，从1到30依次罗列。\n\n我又伸出手指，戳了戳那个20的按键。\n\n银白的光晕亮起。\n\n嚯，没问题。\n\n看来真的是我想多了。",
+      "「滴——」超时警报刺入耳膜。\n\n我深吸一口气，身体没入轿厢，按下了关门键。\n\n电梯门缓缓闭合，我的后背不自觉地贴住轿厢壁，看着显示屏上的数字规律跳动。\n\n一切顺利。",
+      "我想我真的是太累了，居然会出现那样可怕的幻觉。\n\n我看着镜子里自己的脸庞，年轻，苍白，疲惫，一看就很缺觉。\n\n等我忙过这一阵，我一定要——"
+    ],
+    crashText:"等等！\n\n第20层按键的白色光晕突然开始不规则频闪，像是挣扎又无力般，三秒后彻底熄灭。\n\n！\n\n！\n\n！",
+    crashText2:"电梯在坠落。\n\n失重。\n\n灯管在闪烁。\n\n轿厢在自由落体。\n\n我的身体飘了起来，想抓住扶手，手指抓空了。\n\n撞击地面的那一瞬间——"
+  },
+  loopIntros:{
+    r46:"我确信自己陷入了某种奇怪的循环中。\n\n有股神秘力量在阻止我回家。\n\n但我必须上去。\n\n二十楼。\n\n那里是我的家，有我的猫，我的植物，我的生活。\n\n我要回家。",
+    r79:"23:27。\n\n该死的。\n\n又回来了。\n\n我死了一次又一次，每次醒来都在这里。\n\n同一个时间，同一盏灯，同一面裂了缝的镜子。\n\n我已经试过了——电梯会冲顶，楼层会杀人，那些\"人\"根本不是人。\n\n但这栋楼不让我走。\n\n楼梯间通向的不是出口，电梯通向的不是家。\n\n每一条路都是死路，每一次死亡都把我送回起点。\n\n我不信邪。\n\n一定有办法。",
+    r1012:"23:27。\n\n……这是第几次了？\n\n9次？10次？11 次？\n\n我已经记不太清了。\n\n每次都会重新回到这里。\n\n我想回家。\n\n我是说……真正的回家。\n\n回到正常的、会流逝的时间里面。\n\n这栋楼把我困住了。\n\n像一只巨大的笼子。\n\n我在里面跑来跑去，每次撞到栏杆，就被弹回原点。\n\n我好累。",
+    r1315:"23:27。\n\n又是这里。\n\n我已经不害怕了。\n\n害怕是有用的——当你还觉得自己能逃出去的时候。\n\n现在我连害怕都觉得多余。\n\n死过太多次了。\n\n冲顶、坠落、窒息、被拖走……每种循环都体验过。\n\n死亡是真实的，但每次醒来都完好无损，像是身体在嘲笑我。\n\n这栋楼在玩什么游戏？\n\n它想从我这里得到什么？\n\n我不知道。\n\n我什么都不知道了。\n\n我只是……机械地走向电梯。\n\n因为除了前进，我无事可做。",
+    r1618:"23:27。\n\n……我在这里站了多久了？\n\n我已经不知道轮回了多少次……我好像有些记不清了……我死过。\n\n我确定我死过。\n\n很多次。\n\n但是具体是怎么死的……那些楼层的细节……那些\"人\"的脸……像是隔着一层毛玻璃。\n\n看得到轮廓，摸不到实体。\n\n如果继续这样下去，我会不会忘掉一切？\n\n等等……我到底循环多少次了？",
+    r1921:"23:27。\n\n……灯。\n\n暖黄色的灯。\n\n我站在这里。\n\n为什么站在这里？\n\n好像……回家。\n\n回家，对，回家。\n\n我叫什么来着？\n\n……苏苏，对，我叫苏苏。\n\n我住在……二十楼，二十楼。\n\n我要去二十楼。\n\n我要回家。",
+    r22:"23:27。\n\n我叫苏苏。\n\n在市中心的广告公司上班，今天又加班到这个时候。\n\n这是一栋老旧的公寓楼，三十层，外墙的瓷砖掉了大半，楼道里的灯忽明忽暗。\n\n但离公司近，月租也便宜，我就租在二十楼。\n\n好累。\n\n回家先洗个热水澡，还有一份方案明天要交。\n\n老板的语音消息还在响，我没点开。"
+  },
+  lobby:{
+    empty:"电梯厅空荡荡的，只有我和头顶那盏昏黄的吊灯。\n\n电梯安静地停在一楼。",
+  },
+  panelTypes:[
+    {id:'no20',prob:0.50,desc:"面板上的按键从1排到30，整整齐齐。\n\n——唯独没有20。\n\n又是这样。\n\n我的手指在面板上反复找了好几遍。\n\n1、2、3……18、19、21、22……20的位置是一片空白，像是从未存在过。\n\n我住在二十楼。\n\n二十楼是我的家。\n\n为什么二十楼会消失？",buttons(){const a=[];for(let i=1;i<=30;i++)if(i!==20)a.push({label:i,floor:i});return a;}},
+    {id:'normal',prob:0.10,desc:"面板上的按键从1排到30，整整齐齐。\n\n——20在。\n\n我心里一跳。\n\n二十楼的按键就在那里，安安静静地亮着微弱的光。\n\n之前的循环里，20要么消失，要么出问题。\n\n但这次……它好好地在那里。\n\n像是回家的大门终于打开了。\n\n我应该按吗？",buttons(){const a=[];for(let i=1;i<=30;i++)a.push({label:i,floor:i});return a;}},
+    {id:'break20',prob:0.10,desc:"面板上的按键从1排到30，整整齐齐。\n\n20也在。\n\n我按下20。\n\n——按不动。\n\n再按一次。\n\n松松的，像是按键下面空了一截。",buttons(){const a=[];for(let i=1;i<=30;i++)a.push({label:i,floor:i,special:i===20?'break':null});return a;}},
+    {id:'shock20',prob:0.10,desc:"面板上的按键从1排到30，整整齐齐。\n\n20也在。\n\n它亮着微弱的光，和其他按键没什么不同。\n\n但我的手指悬在它上方时，汗毛竖了起来。",buttons(){const a=[];for(let i=1;i<=30;i++)a.push({label:i,floor:i,special:i===20?'shock':null});return a;}},
+    {id:'scrambled',prob:0.10,desc:"面板上的数字……还在，但顺序全乱了。\n\n3挨着27，15挤在1和28之间。\n\n20不知道被塞到了哪个角落。\n\n我找了一会儿，终于在一个不起眼的位置发现了它。",buttons(){const n=[];for(let i=1;i<=30;i++)n.push(i);for(let i=n.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[n[i],n[j]]=[n[j],n[i]];}return n.map(x=>({label:x,floor:x}));}},
+    {id:'symbols',prob:0.10,desc:"面板上没有数字了。\n\n所有的按键都变成了看不懂的符号——像符文，又像虫子爬过的痕迹。\n\n卍、卐、爻、卦、奠、祭……每一个符号背后对应的是哪个楼层？\n\n我完全不知道。\n\n其中有一个符号，按下去会是20楼吗？",buttons(){const s=["卍","卐","爻","卦","奠","祭","禍","煞","冥","殤","亡","魂","魄","靈","柩","喪","哀","慟","殮","蠱","咒","讖","殃","魅","魎","魑","魘","噩","孽","祟"];const f=[];for(let i=1;i<=30;i++)f.push(i);for(let i=f.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[f[i],f[j]]=[f[j],f[i]];}return s.map((x,i)=>({label:x,floor:f[i]}));}}
+  ],
+  elevatorEvents:[
+    {id:'E1',name:'电梯冲顶',texts:["电梯突然加速了。","不是正常的加速——是那种钢缆断裂、制动失灵的疯狂加速。","我被甩到了地板上。\n\n显示屏上的数字在跳，快到来不及看清。","头顶的楼板越来越近。","30层的天花板。\n\n撞击。"],deathId:5},
+    {id:'E2',name:'电梯坠落',texts:["一声闷响。\n\n电梯停住了。","然后——失重。","我的身体飘了起来。\n\n灯管在闪烁，轿厢在自由落体。","胃像被一只手攥住。\n\n我想抓住扶手，但手指抓空了。","撞击地面的那一瞬间，我什么都听不见了。"],deathId:6},
+    {id:'E3',name:'电梯门剪切',texts:["门还没关好，电梯就动了。","我正好站在门口——半边身子在轿厢里，半边身子在外面。","门夹住了我的腰。\n\n电梯开始上升。","我被夹在门和门框之间，跟着轿厢一起往上走。"],deathId:7},
+    {id:'E5',name:'深渊电梯',texts:["叮。\n\n电梯停了。\n\n门开了。","门外——什么都没有。","没有走廊，没有地砖，没有墙壁。\n\n只有黑暗。\n\n和无底的深渊。","一阵风从下方吹上来，带着腐朽的气味。","我的身体失去了平衡。"],deathId:1},
+    {id:'E8',name:'按钮全变红',texts:["面板上所有的按键同时变成了血红色。","我没有碰任何东西。\n\n按键自己在闪烁，像是在传递某种信号。","电梯开始自行运转。\n\n我没有按任何楼层，但它在上升。","显示屏跳出一个数字——它自己选了目的地。","我只能看着。"],deathId:0},
+
+  ],
+  stairsEvents:[
+    {id:'S1',name:'楼梯摔倒',texts:["声控灯又灭了。\n\n我摸黑往上走，脚下踩到了什么——","湿的。\n\n楼梯上有水？","脚一滑。","我翻滚着坠下了楼梯。\n\n后脑勺撞上台阶的棱角，眼前一黑。","然后是持续的坠落。\n\n一层、两层、三层——"],deathId:8},
+    {id:'S2',name:'鬼打墙力竭',texts:["我一直在走。","楼梯在向上延伸，我一层一层地爬。\n\n但是——","台阶上的数字在重复。\n\n4、4、4。","不管我爬多少层，标识牌上的数字永远是4。","我的腿像灌了铅。\n\n心跳快得像要从喉咙里蹦出来。","我蹲下来，大口喘气。\n\n然后我听到——","身后有脚步声。\n\n不紧不慢。\n\n一直在跟着我。","我站起来继续跑。\n\n腿已经不听使唤了。","摔倒。\n\n爬起来。\n\n再摔倒。","跑不动了。"],deathId:10},
+    {id:'S3',name:'Boss来电',texts:["手机突然响了起来。\n\n来电显示：老板。","我才想起来，对，我带了手机。\n\n老板暴躁的声音从电话那头传来：\n\n「发的语音为什么不回？我让你明天早上八点前把营销策划材料发给我，你看到了吗！」","我却像是抓到了救命稻草。\n\n「老板，你听我说，我被困在一栋楼里了，我出不去，求你帮我报个警！」\n\n「这是你不回复工作消息的理由吗？」\n\n「我真的被困在——」\n\n「这是你不回复工作消息的理由吗？」\n\n又是这句。","「老板？」\n\n「这是你不回复工作消息的理由吗？」\n\n老板的声音逐渐变得阴森扭曲。\n\n不，不对劲。\n\n……\n\n我捂住耳朵。\n\n手机掉在了地上。"],deathId:24}
+  ],
+  boyTrigger:{probTable:[[11,15,0.01],[16,20,0.03],[21,25,0.05],[26,30,0.10]],sequence:["我又站在了电梯轿厢里。\n\n等等，为什么要说「又」？\n\n我把这无端的念头抛到脑后，好吧，这不重要。\n\n重要的是，电梯里，好像有鬼。","不对劲是从电梯停在4楼时开始的。\n\n「叮——」第四层到了。\n\n可我根本没有按这个楼层。","电梯门缓缓打开，门外的寒气袭面而来，我忍不住打了个寒颤。\n\n四楼的走廊上一片死寂，空无一人。","三秒，五秒，十秒过去了，电梯门却丝毫没有要合上的意思，刺耳的警报声在狭小的轿厢里骤然响起。","「电梯是卡住了吗？」\n\n我喃喃自语，伸出手去按关门键，却听到冰冷的电子音提示：「电梯已超载，请后进入的乘客退出。」","与此同时，电梯显示屏上，数字「4」疯狂闪烁，下方「满员」两个鲜红的大字格外刺眼。\n\n我的手刹时僵住。","后颈凉飕飕的，好像有什么东西在吹气，似有若无。\n\n轿厢顶上有液体滴落。\n\n潮湿，黏糊，冰冷，滴落在我的头顶。\n\n我的心猛地一紧，直觉最好不要抬眼看。","然而，五秒后，余光中，一抹暗红顺着我的发尖缓缓滑落，「啪哒」一声，在地板绽出一朵殷红的花。\n\n血！！！\n\n我要疯了。\n\n这电梯绝对没法再呆了！","我在心里暗自数了三个数，然后猛地一跺脚，用尽全身力气跳出轿厢，慌不择路地躲进了旁边的楼梯间，玩儿了命似的向上跑去。","逃跑中，我似乎听到了谁在笑，那声音像指甲划过纸面。\n\n不是幻听！\n\n因为紧接着，楼下传来了高跟鞋爬楼的声音。","咔哒——咔哒——\n\n每一声都仿佛踩在我的心脏上。\n\n快逃！快逃！\n\n我在心里尖叫，可双腿却像灌了铅一样，越来越重。","那声音越来越近，某个恐怖的存在正步步紧逼！\n\n要被追上了吗？\n\n绝望的情绪将我吞没，我几乎放弃挣扎。","突然，黑暗中我被谁大力扯了一把，扯进了楼梯间拐角的暗门里。\n\n一只手捂住了我的嘴。","黑暗中，一个少年的声音贴着我耳边响起——\n\n「别出声。」"],endText:"【第一幕 · 电梯循环 · 完】",endSequence:["一点火光亮起。\n\n蜡烛。\n\n一个少年站在黑暗中，手里举着一根蜡烛。\n\n火光映出他苍白的脸。","他看着我。","「我等你很久了。」"]},
+  deaths:{1:'坠入深渊',2:'特立独行',3:'路遇歹人',4:'触电身亡',5:'电梯冲顶',6:'电梯坠落',7:'电梯门剪切',8:'楼梯摔倒',9:'看不见的乘客',10:'鬼打墙',11:'不尊老',12:'空巢老人的陪伴',13:'妈妈的问候',14:'午夜来电',15:'超载',16:'婴儿的啼哭',17:'入棺',18:'欢迎来到地狱',19:'高跟鞋的报复',20:'高跟鞋的喜爱',21:'红色高跟鞋',22:'镜中人',23:'铁栅栏',24:'Boss来电'},
+  emptyFloors:[2,3,10,12,15,17,19,21,27,29]
+};
+
+const State={loopCount:1,isFirstPlay:true,scene:null,currentFloor:1,displayedFloor:null,typing:false,skipRequested:false,typeTimer:null,textComplete:false,pendingAdvance:null,boyTriggered:false,badgeManEncountered:false,badgeForced:false,heelsIgnored:0,wheelchairActive:false,currentPanel:null,break20Presses:0,_badgeRefuseCount:0,_badgeMeetCount:0,deathLog:new Set()};
+const Save={KEY:'elevator_loop_save_v2',load(){try{const r=localStorage.getItem(this.KEY);if(r){const d=JSON.parse(r);State.loopCount=d.loopCount||1;State.isFirstPlay=d.isFirstPlay!==false;if(d.deathLog){const oldMap={11:8,12:9,13:10,14:11,15:12,16:13,17:14,18:15,19:16,20:17,21:18,22:19,23:20,24:21,25:22,26:23,27:24};const remapped=new Set();for(const id of d.deathLog){remapped.add(oldMap[id]||id);}State.deathLog=remapped;}if(d.badgeMeetCount)State._badgeMeetCount=d.badgeMeetCount;}}catch(e){}},save(){try{localStorage.setItem(this.KEY,JSON.stringify({loopCount:State.loopCount,isFirstPlay:State.isFirstPlay,deathLog:[...State.deathLog],badgeMeetCount:State._badgeMeetCount||0}));}catch(e){}},reset(){try{localStorage.removeItem(this.KEY);}catch(e){}State.loopCount=1;State.isFirstPlay=true;State.deathLog=new Set();State._badgeMeetCount=0;},
+  SLOTS_KEY:'elevator_save_slots_v1',
+  getSlots(){try{const r=localStorage.getItem(this.SLOTS_KEY);if(r)return JSON.parse(r);}catch(e){}return{auto:null,slot1:null,slot2:null,slot3:null};},
+  saveSlot(name){try{const slots=this.getSlots();slots[name]={loopCount:State.loopCount,isFirstPlay:State.isFirstPlay,deathLog:[...State.deathLog],badgeMeetCount:State._badgeMeetCount||0,time:new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})};localStorage.setItem(this.SLOTS_KEY,JSON.stringify(slots));return true;}catch(e){return false;}},
+  loadSlot(name){try{const slots=this.getSlots();const d=slots[name];if(!d)return false;State.loopCount=d.loopCount||1;State.isFirstPlay=d.isFirstPlay!==false;if(d.deathLog)State.deathLog=new Set(d.deathLog);if(d.badgeMeetCount)State._badgeMeetCount=d.badgeMeetCount;this.save();return true;}catch(e){return false;}},
+  deleteSlot(name){try{const slots=this.getSlots();slots[name]=null;localStorage.setItem(this.SLOTS_KEY,JSON.stringify(slots));}catch(e){}}
+};
+
+const Audio={ctx:null,enabled:true,volume:0.6,ambientOsc:null,ambientGain:null,heartbeatTimer:null,masterGain:null,init(){if(this.ctx)return;try{this.ctx=new(window.AudioContext||window.webkitAudioContext)();if(this.ctx.state==='suspended')this.ctx.resume();this.masterGain=this.ctx.createGain();this.masterGain.gain.value=this.volume;this.masterGain.connect(this.ctx.destination);}catch(e){this.ctx=null;}},_dest(){return this.masterGain||this.ctx.destination;},setVolume(v){this.volume=v;if(this.masterGain)this.masterGain.gain.value=this.enabled?v:0;if(BGM.audio)BGM.audio.volume=v;},startAmbient(){if(!this.ctx||!this.enabled||this.ambientOsc)return;const o=this.ctx.createOscillator();o.type='sine';o.frequency.value=50;const g=this.ctx.createGain();g.gain.value=0.03;o.connect(g).connect(this._dest());o.start();this.ambientOsc=o;this.ambientGain=g;},stopAmbient(){if(this.ambientOsc){try{this.ambientOsc.stop();}catch(e){}this.ambientOsc=null;this.ambientGain=null;}},startHeartbeat(b){if(!this.ctx||!this.enabled)return;b=b||75;this.stopHeartbeat();const itv=60000/b;const beat=()=>{if(!this.ctx||!this.enabled)return;const t=this.ctx.currentTime;this._thump(t);this._thump(t+0.15);};beat();this.heartbeatTimer=setInterval(beat,itv);},_thump(t){const o=this.ctx.createOscillator();o.type='sine';o.frequency.setValueAtTime(60,t);o.frequency.exponentialRampToValueAtTime(30,t+0.15);const g=this.ctx.createGain();g.gain.setValueAtTime(0.08,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.15);o.connect(g).connect(this._dest());o.start(t);o.stop(t+0.15);},stopHeartbeat(){if(this.heartbeatTimer){clearInterval(this.heartbeatTimer);this.heartbeatTimer=null;}},ding(){if(!this.ctx||!this.enabled)return;const t=this.ctx.currentTime;[1000,1200].forEach((f,i)=>{const o=this.ctx.createOscillator();o.type='sine';o.frequency.value=f;const g=this.ctx.createGain();const tt=t+i*0.12;g.gain.setValueAtTime(0,tt);g.gain.linearRampToValueAtTime(0.15,tt+0.01);g.gain.exponentialRampToValueAtTime(0.001,tt+0.1);o.connect(g).connect(this._dest());o.start(tt);o.stop(tt+0.12);});},metalCreak(){if(!this.ctx||!this.enabled)return;const t=this.ctx.currentTime;const o=this.ctx.createOscillator();o.type='sawtooth';const g=this.ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.06,t+0.05);g.gain.exponentialRampToValueAtTime(0.001,t+0.5);o.frequency.setValueAtTime(200,t);for(let i=0;i<10;i++)o.frequency.setValueAtTime(200+Math.random()*200,t+i*0.05);o.connect(g).connect(this._dest());o.start(t);o.stop(t+0.5);},falling(){if(!this.ctx||!this.enabled)return;const t=this.ctx.currentTime;const bs=this.ctx.sampleRate*2;const buf=this.ctx.createBuffer(1,bs,this.ctx.sampleRate);const d=buf.getChannelData(0);for(let i=0;i<bs;i++)d[i]=Math.random()*2-1;const n=this.ctx.createBufferSource();n.buffer=buf;const f=this.ctx.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(2000,t);f.frequency.exponentialRampToValueAtTime(200,t+2);const g=this.ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+0.2);g.gain.exponentialRampToValueAtTime(0.001,t+2);n.connect(f).connect(g).connect(this._dest());n.start(t);n.stop(t+2);},click(){if(!this.ctx||!this.enabled)return;const t=this.ctx.currentTime;const o=this.ctx.createOscillator();o.type='sine';o.frequency.value=800;const g=this.ctx.createGain();g.gain.setValueAtTime(0.1,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.03);o.connect(g).connect(this._dest());o.start(t);o.stop(t+0.04);},toggle(){this.enabled=!this.enabled;if(!this.enabled){this.stopAmbient();this.stopHeartbeat();BGM.stop();if(this.masterGain)this.masterGain.gain.value=0;}else{if(this.masterGain)this.masterGain.gain.value=this.volume;BGM.resume();}return this.enabled;}};
+
+const BGM={
+  audio:null,current:null,fadeTimer:null,targetVol:0.4,
+  play(track){
+    if(this.current===track && this.audio && !this.audio.paused) return;
+    this.fadeTo(0,800,()=>{
+      if(this.audio){this.audio.pause();this.audio=null;}
+      this.current=track;
+      if(!Audio.enabled) return;
+      this.audio=new window.Audio('audio/'+track+'.mp3');
+      this.audio.loop=true;
+      this.audio.volume=0;
+      this.audio.play().catch(function(){});
+      this.targetVol=Audio.volume;
+      this.fadeTo(this.targetVol,1500);
+    });
+  },
+  fadeTo(vol,duration,cb){
+    if(this.fadeTimer) clearInterval(this.fadeTimer);
+    if(!this.audio){ if(cb)cb(); return; }
+    const startVol=this.audio.volume;
+    const steps=duration/50;
+    let step=0;
+    this.fadeTimer=setInterval(()=>{
+      step++;
+      if(this.audio) this.audio.volume=startVol+(vol-startVol)*(step/steps);
+      if(step>=steps){
+        clearInterval(this.fadeTimer);
+        this.fadeTimer=null;
+        if(cb) cb();
+      }
+    },50);
+  },
+  stop(){
+    if(this.fadeTimer){clearInterval(this.fadeTimer);this.fadeTimer=null;}
+    if(this.audio){this.audio.pause();this.audio=null;}
+    this.current=null;
+  },
+  resume(){
+    if(this.current && this.audio && this.audio.paused){
+      this.audio.volume=0;
+      this.audio.play().catch(function(){});
+      this.fadeTo(this.targetVol,1000);
+    }
+  },
+  updateForScene(){
+    if(!Audio.enabled) return;
+    if(State.boyTriggered || State.scene==='boy'){
+      this.play('weizhi');
+    } else {
+      this.play('kunju');
+    }
+  }
+};
+
+const SCENE_CFG={title:{ambient:true,heartbeat:false},lobby:{ambient:true,heartbeat:false},elevator:{ambient:true,heartbeat:75},stairs:{ambient:true,heartbeat:false},death:{ambient:false,heartbeat:false},boy:{ambient:false,heartbeat:false},black:{ambient:false,heartbeat:false}};
+function setScene(n){document.body.className='scene-'+n;const c=SCENE_CFG[n]||{};if(c.ambient)Audio.startAmbient();else Audio.stopAmbient();if(c.heartbeat)Audio.startHeartbeat(c.heartbeat);else Audio.stopHeartbeat();}
+const el={loopBar:document.getElementById('loopBar'),floorInfo:document.getElementById('floorInfo'),narrative:document.getElementById('narrative'),choices:document.getElementById('choices')};
+function updateLoopBar(){if(State.scene==='opening'||State.loopCount<=0){el.loopBar.textContent='';}else{el.loopBar.textContent='第 '+State.loopCount+' 次循环';}if(State.currentFloor&&State.currentFloor>1){el.floorInfo.textContent=(State.displayedFloor||State.currentFloor)+'F';}else{el.floorInfo.textContent='';}}
+function updateDebug(){const d=document.getElementById('dbg-state');if(!d)return;d.innerHTML='Loop: '+State.loopCount+'<br>Floor: '+State.currentFloor+' (disp:'+(State.displayedFloor||'-')+')<br>Boy: '+State.boyTriggered+' | Heels: '+State.heelsIgnored+'<br>Deaths: '+State.deathLog.size+'/24';}
+function typewriter(text,onDone){
+  if(State.typeTimer)clearInterval(State.typeTimer);
+  State.typing=true;State.skipRequested=false;State.textComplete=false;State.pendingAdvance=null;
+  el.narrative.innerHTML='';
+  const p=document.createElement('p');el.narrative.appendChild(p);
+  let i=0;
+  State.typeTimer=setInterval(()=>{
+    if(State.skipRequested){
+      text.slice(i).split('').forEach(ch=>{
+        if(ch==='\n')p.appendChild(document.createElement('br'));
+        else p.appendChild(document.createTextNode(ch));
+      });
+      finish();
+      return;
+    }
+    if(i<text.length){
+      if(text[i]==='\n')p.appendChild(document.createElement('br'));
+      else p.appendChild(document.createTextNode(text[i]));
+      i++;
+    } else finish();
+  },55);
+  function finish(){
+    clearInterval(State.typeTimer);State.typeTimer=null;State.typing=false;
+    State.textComplete=true;State.pendingAdvance=onDone;
+    showClickHint();
+  }
+}
+function showClickHint(){
+  const hint=document.getElementById('click-hint');
+  if(hint) hint.classList.add('visible');
+}
+function hideClickHint(){
+  const hint=document.getElementById('click-hint');
+  if(hint) hint.classList.remove('visible');
+}
+function typewriterSeq(arr,idx,onDone){
+  if(idx>=arr.length){if(onDone)onDone();return;}
+  typewriter(arr[idx],()=>typewriterSeq(arr,idx+1,onDone));
+}
+function showChoices(cs){hideClickHint();State.textComplete=false;State.pendingAdvance=null;el.choices.innerHTML='';cs.forEach(c=>{const b=document.createElement('button');b.className='choice';b.textContent=c.text;b.onclick=()=>{Audio.click();clearChoices();handleChoice(c);};el.choices.appendChild(b);});}
+function clearChoices(){el.choices.innerHTML='';}
+function showContinue(cb){hideClickHint();clearChoices();const b=document.createElement('button');b.className='choice';b.textContent='……继续';b.onclick=()=>{Audio.click();cb();};el.choices.appendChild(b);}
+function renderPanel(panel){hideClickHint();clearChoices();const wrap=document.createElement('div');wrap.className='panel-wrap';const grid=document.createElement('div');grid.className='panel-grid';panel.buttons().forEach(b=>{const btn=document.createElement('button');btn.className='panel-btn';if(b.special==='break'||b.special==='shock')btn.classList.add('glow20');btn.textContent=b.label;btn.onclick=()=>{Audio.click();onPanelButton(b,btn);};grid.appendChild(btn);});wrap.appendChild(grid);const hint=document.createElement('div');hint.className='hint';hint.textContent='选择一个按键按下……';wrap.appendChild(hint);el.choices.appendChild(wrap);}
+el.narrative.addEventListener('click',()=>{ if(State.typing) State.skipRequested=true; });
+document.addEventListener('click',(e)=>{
+  // Ignore clicks on buttons/choices/overlays/debug
+  if(e.target.closest('button,.panel-btn,#debug-panel,#death-overlay,#codex-overlay,#title-screen,#click-hint')) return;
+  if(State.typing){
+    State.skipRequested=true;
+  } else if(State.textComplete&&State.pendingAdvance){
+    Audio.click();
+    State.textComplete=false;
+    const cb=State.pendingAdvance;
+    State.pendingAdvance=null;
+    hideClickHint();
+    cb();
+  }
+});
+
+/* ========== GAME FLOW ========== */
+function pickPanel(){
+  const r=Math.random(); let acc=0;
+  for(const p of CONFIG.panelTypes){ acc+=p.prob; if(r<acc) return p; }
+  return CONFIG.panelTypes[0];
+}
+function rollBoy(){
+  const l=State.loopCount;
+  if(l<=10) return false;
+  if(l>=31) return true;
+  for(const [min,max,prob] of CONFIG.boyTrigger.probTable){ if(l>=min&&l<=max) return Math.random()<prob; }
+  return false;
+}
+function rollNPC(){
+  const r=Math.random();
+  if(r<0.12) return 'badge';
+  if(r<0.19) return 'hooded';
+  return 'none';
+}
+function logDeath(id){ if(id>0){ State.deathLog.add(id); Save.save(); } }
+function getLoopIntro(){
+  const l=State.loopCount;
+  if(l>=4&&l<=6) return CONFIG.loopIntros.r46;
+  if(l>=7&&l<=9) return CONFIG.loopIntros.r79;
+  if(l>=10&&l<=12) return CONFIG.loopIntros.r1012;
+  if(l>=13&&l<=15) return CONFIG.loopIntros.r1315;
+  if(l>=16&&l<=18) return CONFIG.loopIntros.r1618;
+  if(l>=19&&l<=21) return CONFIG.loopIntros.r1921;
+  if(l>=22) return CONFIG.loopIntros.r22;
+  return null;
+}
+
+function startGame(){
+  BGM.updateForScene();
+  Save.load();
+  if(State.isFirstPlay){ playOpening(); }
+  else { startLoop(); }
+}
+
+/* --- Loop 1: Fixed opening --- */
+function playOpening(){
+  setScene('title'); State.scene='opening'; updateLoopBar();
+  Audio.metalCreak();
+  typewriterSeq(CONFIG.loop1.paragraphs,0,()=>{
+    showContinue(()=>{
+      clearChoices();
+      document.body.classList.add('shaking'); Audio.falling();
+      typewriter(CONFIG.loop1.crashText,()=>{
+        document.body.classList.add('dying');
+        setTimeout(()=>{
+          document.body.classList.remove('shaking','dying');
+          State.isFirstPlay=false; Save.save();
+          die('电梯冲顶',5);
+        },1500);
+      });
+    });
+  });
+}
+
+/* --- Loop 2: Fixed script --- */
+function playLoop2(){
+  BGM.play('kunju');
+  setScene('lobby'); State.scene='opening'; updateLoopBar();
+  typewriterSeq(CONFIG.loop2.paragraphs,0,()=>{
+    setScene('elevator');
+    document.body.classList.add('shaking');
+    typewriter(CONFIG.loop2.crashText,()=>{
+      Audio.falling();
+      typewriter(CONFIG.loop2.crashText2,()=>{
+        document.body.classList.add('dying');
+        setTimeout(()=>{
+          document.body.classList.remove('shaking','dying');
+          Save.save();
+          die('电梯坠落',6);
+        },1500);
+      });
+    });
+  });
+}
+
+/* --- Loop 3: Social pressure teaching --- */
+function playLoop3(){
+  BGM.play('kunju');
+  setScene('lobby'); State.scene='lobby'; State.currentFloor=1; State.displayedFloor=null;
+  updateLoopBar(); updateDebug();
+  typewriterSeq([
+    "再睁眼，电梯厅墙上的挂钟指针纹丝未动。\n\n叮！\n\n金属门再度开启。",
+    "镜面轿厢里空无一人，唯有我自己的身影凝固其中。\n\n不，不对。\n\n我的左手空无一物，而镜中人的左手腕上，一抹红绳宛若渗血。",
+    "我的瞳孔骤然紧缩，脚步踉跄后退。\n\n尖叫就要破口而出，卡到嗓子眼却哑了声。\n\n因为，一只透着寒意的手，悄然无息地抵住了我的背。\n\n什么东西？\n\n！",
+    "我像被施了定身咒，死死地钉在原地，连回头的勇气都没有。\n\n「当心。」一个轻柔的女声在我耳边响起。\n\n我紧绷的神经瞬间放松了些许，原来是人啊。",
+    "扶我的女人缓缓收回手，另一手端着杯星巴克，杯口的热气若有若无。\n\n不知何时，电梯厅涌进来几个人，胸前挂着工牌，大概是哪家公司的员工下班了吧。",
+    "他们走向电梯，我心里一紧，忙阻止：「别进去！电梯的镜子有问——」话到一半，猛然止住。\n\n电梯的镜面中，我身体僵直，手腕空空如也。\n\n哪有什么红绳？\n\n难道，刚才又是幻觉？",
+    "所有人都进了电梯，面朝我直直站立。\n\n「进不进啊？」最先踏入轿厢的男人不耐烦地扯了扯蓝灰领带。"
+  ],0,()=>{
+    showChoices([
+      {text:'「你们先上去吧。」',action:'l3_refuse1'},
+      {text:'「这么多人，应该没问题吧。」（进电梯）',action:'l3_enter'}
+    ]);
+  });
+}
+
+function loop3Enter(){
+  setScene('elevator'); State.scene='elevator'; clearChoices();
+  typewriterSeq([
+    "好。\n\n进。\n\n我进。\n\n或许，这次会不一样呢？\n\n有人陪着，总不会出事吧？",
+    "我走进了电梯。\n\n轿厢里站了好几个人。\n\n工牌男站在最前面。\n\n咖啡女人站在我旁边，她一直没有说话，端着咖啡，目光低垂。",
+    "门合拢了。\n\n几个人都沉默着，像是一天的工作抽干了所有的话。\n\n我看着面板。\n\n这次——20在。",
+    "我的手在发抖。\n\n但我还是按下了20。\n\n那是我的家。\n\n我要回家。\n\n电梯开始上升。"
+  ],0,()=>loop3Floor7());
+}
+function loop3Floor7(){
+  Audio.ding();
+  typewriterSeq([
+    "叮。\n\n7楼到了。",
+    "一个工牌男走了出去。\n\n他头也不回地穿过走廊，脚步声渐远。\n\n安全到达。"
+  ],0,()=>loop3Floor9());
+}
+function loop3Floor9(){
+  Audio.ding();
+  typewriterSeq([
+    "叮。\n\n9楼。",
+    "又下去一个。\n\n他甚至没有抬头看我一眼，径直走进了走廊的黑暗中。"
+  ],0,()=>loop3Floor11());
+}
+function loop3Floor11(){
+  Audio.ding();
+  typewriterSeq([
+    "叮。\n\n11楼到了。",
+    "咖啡女人抬起头。\n\n她看了我一眼，她似乎想跟我说什么。",
+    "然后她端着咖啡，走了出去。\n\n消失在了黑暗深处。"
+  ],0,()=>loop3Floor15());
+}
+function loop3Floor15(){
+  Audio.ding();
+  typewriterSeq([
+    "叮。\n\n15楼。",
+    "最后一个工牌男也走了出去。\n\n走廊的灯亮着，他推门进了一户人家。",
+    "轿厢里只剩我一个人了。\n\n电梯继续上升。"
+  ],0,()=>loop3Continue());
+}
+function loop3Continue(){
+  typewriterSeq([
+    "我有些兴奋。\n\n他们看起来都很安全地到达了想去的楼层。\n\n7楼、9楼、11楼、15楼，每个人都安全到达了。",
+    "那我是不是也可以……"
+  ],0,()=>loop3Floor20());
+}
+function loop3Floor20(){
+  Audio.ding();
+  typewriterSeq([
+    "叮。\n\n20楼到了。",
+    "门开了。",
+    "外面——看起来一切正常。\n\n走廊的灯亮着。",
+    "我迈出了电梯。"
+  ],0,()=>loop3Death());
+}
+function loop3Death(){
+  document.body.classList.add('shaking'); Audio.falling();
+  typewriterSeq([
+    "脚下踩到的不是地砖。\n\n——是虚空。\n\n我坠落了。"
+  ],0,()=>{
+    setTimeout(()=>{
+      document.body.classList.remove('shaking');
+      typewriterSeq([
+        "在坠入黑暗的最后一眼，我看到了电梯井的井底。\n\n散落着数不清的躯体。\n\n工牌和咖啡杯。\n\n密密麻麻。\n\n堆了一层又一层。"
+      ],0,()=>{
+        die('坠入深渊',1);
+      });
+    },500);
+  });
+}
+
+/* --- Loop 4+: Normal flow --- */
+function startLoop(){
+  if(State.loopCount===2){ playLoop2(); return; }
+  if(State.loopCount===3){ playLoop3(); return; }
+  State.currentFloor=1; State.displayedFloor=null;
+  State.heelsIgnored=0; State.wheelchairActive=false;
+  State.badgeManEncountered=false; State.badgeForced=false;
+  State.break20Presses=0; State._badgeRefuseCount=0;
+  State.boyTriggered=rollBoy();
+  Save.save(); updateDebug(); updateLoopBar();
+  // 少年触发：直接进入演出序列，不进电梯厅
+  if(State.boyTriggered){
+    BGM.play('weizhi');
+    playBoySequence();
+    return;
+  }
+  BGM.updateForScene();
+  const intro=getLoopIntro();
+  setScene('lobby');
+  if(intro){
+    typewriter(intro,()=>{
+      goToLobby(rollNPC());
+    });
+  } else {
+    goToLobby(rollNPC());
+  }
+}
+
+function goToLobby(npc){
+  setScene('lobby'); State.scene='lobby'; State.currentFloor=1; State.displayedFloor=null;
+  updateLoopBar(); updateDebug();
+  if(npc==='badge'){ handleBadgeMan(); return; }
+  if(npc==='hooded'){ handleHoodedMan(); return; }
+  typewriter(CONFIG.lobby.empty,()=>{
+    showChoices([{text:'进电梯',action:'elevator'},{text:'走楼梯',action:'stairs'}]);
+  });
+}
+
+/* --- NPC: 工牌男+咖啡女 (4th+ loop) --- */
+function handleBadgeMan(){
+  State._badgeMeetCount = (State._badgeMeetCount||0) + 1;
+  State._badgeRefuseCount = 0;
+  if(State._badgeMeetCount === 1){
+    // 1st encounter: coffee woman present
+    typewriterSeq([
+      "23:27。\n\n电梯厅昏黄的灯光悬在头顶，在地上映出浅浅的影子。\n\n我又回到了这里。",
+      "电梯厅里有人！\n\n是个穿风衣的女人，手里端着一杯散发着微温的咖啡。\n\n是她！\n\n那几个挂着蓝灰工牌的男人也在！",
+      "我急切地问：「你们也被困在这里了，对不对？！」\n\n女人显然愣住了，她微微皱眉打量着我，眼神里闪过一丝说不清的深意。",
+      "「这栋楼有问题！我们所有人都在循环里！」\n\n「你们没发现吗？你们已经出现在这里很多次了！我们……我们早就死过很多次了！」",
+      "叮。\n\n电梯门滑开。\n\n没有人理会我的疯言狂语。\n\n工牌男们面无表情地依次走了进去，咖啡女也收回手，跟着退进了轿厢。",
+      "最先踏入轿厢的男人转过身，不耐烦地扯了扯蓝灰领带：「进不进啊？」",
+      "「你们真的不记得了吗？！上一次我们就是这样进来的，然后所有人都摔了下去！」\n\n「我在井底看见了你们的……身体。」",
+      "工牌男极其不耐烦地「啧」了一声：「磨磨蹭蹭的。大家加班都累了一天了，赶紧的，别耽误大家时间。」",
+      "看着他们麻木又厌烦的脸，我猛然意识到——\n\n所有人都没有轮回的记忆。\n\n在这场漫长无尽的噩梦里，只有我一个人是清醒的。"
+    ],0,()=>{
+      showChoices([
+        {text:'不行，我一定要劝他们别坐电梯！（死挡着门，不让他们走）',action:'badge_refuse'},
+        {text:'算了，跟着他们……再试一次呢？（进电梯）',action:'elev_badge'}
+      ]);
+    });
+  } else if(State._badgeMeetCount >= 3 && State.loopCount >= 20){
+    // 3rd+ encounter with memory loss (loopCount >= 20)
+    typewriterSeq([
+      "23:27。\n\n电梯厅昏黄的灯光悬在头顶，在地上映出浅浅的影子。\n\n我又回到了这里。\n\n奇怪……我为什么要说「又」？",
+      "电梯厅里有人！\n\n几个穿着白衬衫、挂着工牌的男人在等电梯，身上散发着加班后特有的烦躁与疲态。\n\n大概也是这附近某栋写字楼的打工牛马下班了吧。",
+      "他们看着……好眼熟。\n\n在哪里见过呢？\n\n大概是平时楼里的邻居吧。",
+      "叮。\n\n电梯门开了。\n\n一群人面无表情地走了进去。\n\n我对电梯莫名地有些抗拒。",
+      "一个男的眼神烦躁地盯着我：\n\n「还愣着干嘛？到底进不进来啊？」"
+    ],0,()=>{
+      showChoices([
+        {text:'「你们先上去吧。」',action:'badge_refuse'},
+        {text:'「这么多人，应该没问题吧。」（进电梯）',action:'elev_badge_amnesia'}
+      ]);
+    });
+  } else {
+    // 2nd encounter (or 3rd+ with loopCount < 20): coffee woman absent, player still aware
+    typewriterSeq([
+      "23:27。\n\n电梯厅昏黄的灯光悬在头顶，在地上映出浅浅的影子。\n\n我又回到了这里。",
+      "电梯厅里有人！\n\n哦，又是那几个工牌男。\n\n奇怪……那个端着咖啡的女人不见了。\n\n她去了哪里？",
+      "叮。\n\n电梯门开了。\n\n一群人面无表情地走了进去。",
+      "最前头那个男的烦躁地扯了扯蓝灰领带，盯着我：「还愣着干嘛？到底进不进来啊？」",
+      "看着少了一个人的电梯，我心里莫名升起一丝动摇。"
+    ],0,()=>{
+      showChoices([
+        {text:'「你们自己上去吧，我走楼梯。」',action:'badge_stairs'},
+        {text:'「听我的，别上去。」（再劝他们一次）',action:'badge_refuse'},
+        {text:'跟他们一起上去，万一有转机呢？（进电梯）',action:'elev_badge'}
+      ]);
+    });
+  }
+}
+
+/* --- NPC: 兜帽男 --- */
+function handleHoodedMan(){
+  typewriterSeq([
+    "电梯厅里有一个人。\n\n不，不对。\n\n是一个轮廓。\n\n他站在角落里，戴着一个兜帽，低着头。\n\n他整个人缩在阴影里，如果不是我仔细看，根本不会注意到。",
+    "他没有在等电梯。\n\n他只是……站在那里。\n\n空气变得很冷。\n\n我的后颈一阵发麻。",
+    "他的手插在口袋里。\n\n口袋鼓鼓囊囊的，不知道装了什么。"
+  ],0,()=>{
+    showChoices([
+      {text:'进电梯',action:'elev_hooded'},
+      {text:'走楼梯',action:'stairs_hooded'}
+    ]);
+  });
+}
+
+/* --- 进电梯 --- */
+function enterElevator(opts){
+  opts=opts||{};
+  setScene('elevator'); State.scene='elevator'; State.break20Presses=0;
+  updateLoopBar(); clearChoices();
+  const panel=pickPanel(); State.currentPanel=panel;
+  let enterText;
+  enterText="电梯门合拢。\n\n轿厢里只有我一个人。\n\n暖白色的灯管照着不锈钢的内壁，映出我疲惫的脸。\n\n空气里有一股淡淡的金属味。\n\n我转向面板。";
+  typewriter(enterText,()=>{
+    typewriter(panel.desc,()=>renderPanel(panel));
+  });
+}
+
+/* --- 按面板按钮 --- */
+function onPanelButton(btnData,btnEl){
+  document.querySelectorAll('.panel-btn').forEach(b=>b.style.pointerEvents='none');
+  if(btnData.special==='shock'){
+    clearChoices();
+    typewriterSeq([
+      "指尖一阵发麻。",
+      "电流。\n\n从指尖蔓延到手腕，到手臂，到全身。\n\n轿厢的灯管爆闪了几下。",
+      "我的身体贴在了面板上，手指像焊死在按键上，想松开却松不开。"
+    ],0,()=>die('触电身亡',4));
+    return;
+  }
+  if(btnData.special==='break'){
+    clearChoices();
+    showChoices([
+      {text:'再用力按一次',action:'break20_press'},
+      {text:'按别的楼层',action:'break20_other'}
+    ]);
+    return;
+  }
+  // 20F: 50%踏空死, 50%随机到其他楼层
+  if(btnData.floor===20){
+    clearChoices();
+    if(Math.random()<0.5){
+      // 踏空坠亡
+      typewriterSeq([
+        "电梯停了。\n\n门开处一片黑暗。",
+        "我迈出了电梯。\n\n脚下踩到的不是地砖。\n\n——是虚空。\n\n我坠落了。"
+      ],0,()=>die('坠入深渊',1));
+    } else {
+      // 随机到其他楼层
+      const pool=[]; for(let i=1;i<=30;i++) if(i!==20) pool.push(i);
+      const target=pool[Math.floor(Math.random()*pool.length)];
+      State.displayedFloor=20;
+      State.currentFloor=target;
+      updateDebug();
+      Audio.metalCreak();
+      typewriterSeq([
+        "我按下20。\n\n电梯开始上升……",
+        "叮。门开了。\n\n但走廊的样子……不太对。"
+      ],0,()=>arriveAtFloor(target,'elevator'));
+    }
+    return;
+  }
+  clearChoices();
+  // Determine floor (with displacement)
+  let target=btnData.floor;
+  let displaced=false;
+  if(Math.random()<0.20){
+    const pool=[]; for(let i=1;i<=30;i++) if(i!==target) pool.push(i);
+    target=pool[Math.floor(Math.random()*pool.length)];
+    displaced=true;
+  }
+  State.displayedFloor=btnData.floor;
+  State.currentFloor=target;
+  updateDebug();
+  // 10% global elevator event
+  if(Math.random()<0.10){
+    Audio.metalCreak();
+    handleElevGlobalEvent();
+    return;
+  }
+  Audio.metalCreak();
+  typewriter('电梯开始上升……',()=>arriveAtFloor(target,'elevator'));
+}
+
+/* --- 全楼电梯事件 --- */
+function handleElevGlobalEvent(){
+  const pool=CONFIG.elevatorEvents.filter(e=>e.id!=='E8'&&e.id!=='E9');
+  const r=Math.random();
+  if(r<0.5){
+    const dr=Math.random();
+    let evt;
+    if(dr<0.55){ evt=pool.find(e=>e.id==='E3'); }
+    else if(dr<0.70){ evt=pool.find(e=>e.id==='E1'); }
+    else if(dr<0.85){ evt=pool.find(e=>e.id==='E2'); }
+    else { evt=pool.find(e=>e.id==='E5'); }
+    typewriterSeq(evt.texts,0,()=>die(evt.name,evt.deathId));
+  } else if(r<0.75){
+    // E8: buttons turn red
+    const floors=[]; for(let i=1;i<=30;i++) floors.push(i);
+    const target=floors[Math.floor(Math.random()*floors.length)];
+    typewriterSeq(CONFIG.elevatorEvents.find(e=>e.id==='E8').texts,0,()=>{
+      State.displayedFloor=target; State.currentFloor=target; updateDebug();
+      arriveAtFloor(target,'elevator');
+    });
+  } else {
+    // E9: elevator stuck
+    typewriterSeq(["电梯猛地一顿。\n\n突然停住了。\n\n显示屏上的数字卡在两层楼之间，不停闪烁。","灯管闪了两下。\n\n轿厢不动了。\n\n我按下开门键。\n\n电梯门纹丝不动。"],0,()=>{
+      showChoices([
+        {text:'等待',action:'e9_wait'},
+        {text:'扒门',action:'e9_pry'}
+      ]);
+    });
+  }
+}
+
+/* --- 到达楼层 --- */
+function arriveAtFloor(floor,method){
+  Audio.ding();
+  updateLoopBar(); updateDebug();
+  if(CONFIG.emptyFloors.includes(floor) && floor!==3 && floor!==29){
+    const fragments=[
+      "走廊安安静静。\n\n灯亮着，但有一种不稳定的闪烁感。\n\n像是随时会灭。",
+      "走廊尽头有一袋垃圾，散发着酸腐的气味。\n\n苍蝇在袋口打转。\n\n这个点了，谁家还会扔垃圾？",
+      "一扇门半开着，里面传来电视雪花声。\n\n沙沙沙。\n\n我推了一下门，纹丝不动。\n\n再推——\n\n门突然关上了。",
+      "走廊的灯泡在闪，发出滋滋的电流声。\n\n每闪一次，墙上的影子就扭曲一下。\n\n我快步走过。",
+      "地上有一只拖鞋。\n\n只有一只。\n\n另一只不知道在哪里。\n\n鞋底有干涸的泥印，通向走廊深处。",
+      "电梯门在我身后关上的声音格外响。\n\n走廊安静得过分。\n\n我听到某一户里面有水龙头在滴水。\n\n滴。\n\n滴。\n\n滴。",
+      "走廊墙壁的涂料大片剥落，露出底下灰色的水泥。\n\n剥落的痕迹像是某种图案。\n\n我不想细看。",
+      "空气里有一股淡淡的消毒水味。\n\n像医院。\n\n这栋楼里没有医院。",
+"某一户的门上贴着一张褪色的春联。\n\n上联还在，下联被人撕掉了。\n\n残留的纸片上隐约能看到一个字。\n\n我凑近看——是「死」。\n\n再揉揉眼睛……\n\n是「岁岁平安」。\n\n看花了。",
+      "走廊拐角处放着一辆儿童自行车。\n\n粉色的，轮子很小。\n\n车篮里放着一只没有头的毛绒熊。",
+      "我闻到了一股烟味。\n\n不是香烟——是烧纸的味道。\n\n某个门口的地上有一小堆灰烬，还是温的。",
+      "墙壁上有人用指甲刮了几个字。\n\n我凑近看——\n\n「别上去。」",
+      "楼梯间的墙上有人用歪歪扭扭的字写着：\n\n听说这栋楼的高楼层，每到深夜总有高跟鞋走路的声音。",
+      "楼梯口的窗向外望去，今夜没有月亮，黑漆漆的什么也看不见。"
+    ];
+    const idx=Math.floor(Math.random()*fragments.length);
+    const arrive= method==='elevator' ? "叮。\n\n门开了。" : "";
+    typewriterSeq([
+      arrive,
+      floor+"楼。",
+      fragments[idx]
+    ],0,()=>handleSafeFloor(floor));
+    return;
+  }
+  switch(floor){
+    case 3: return floor3(method);
+    case 29: return floor29(method);
+    case 4: return floor4(method);
+    case 5: case 6: case 7: case 8: case 9: return floorWheelchair(floor,method);
+    case 11: return floor11(method);
+    case 13: return floor13(method);
+    case 14: return floor14(method);
+    case 16: return floor16(method);
+    case 18: return floor18(method);
+    case 20: return floor20(method);
+    case 22: case 23: case 24: case 25: case 26: return floorHeels(floor,method);
+    case 28: return floor28(method);
+    case 30: return floor30(method);
+    default: return handleSafeFloor(floor);
+  }
+}
+
+/* --- 楼层事件 --- */
+function floor3(m){
+  const arrive = m==='elevator' ? "叮。\n\n门开了。\n\n3楼。" : "3楼。";
+  typewriterSeq([
+    arrive,
+    "楼梯间的墙上贴着一张讣告，纸张已经泛黄卷边，但字迹还看得清：\n\n「周国栋同志因病于二〇二三年十月十七日在家中逝世，享年七十八岁。\n\n周国栋同志一生简朴，待人温和，晚年独居于此楼，常于楼道中摇扇纳凉，与邻里闲谈。\n\n定于十月二十日出殡，望各位邻里届时送别。」"
+  ],0,()=>handleSafeFloor(3));
+}
+function floor29(m){
+  const arrive = m==='elevator' ? "叮。\n\n门开了。\n\n29楼。" : "29楼。";
+  typewriterSeq([
+    arrive + "\n\n向上看去，通往30楼的楼梯被一道锈死的铁栅栏锁住了，缝隙里透进来的风带着天台的寒意。"
+  ],0,()=>{
+    const choices=[{text:'坐电梯（选楼层）',action:'elevator'}];
+    choices.push({text:'走楼梯下28F',action:'stairs_down'});
+    showChoices(choices);
+  });
+}
+function floor4(m){
+  if(m==='elevator'){
+    typewriterSeq([
+      "叮。\n\n门开了。",
+      "4楼。\n\n外面黑漆漆的，走廊的灯没有亮。",
+      "但——有什么东西在外面。",
+      "我看不见，但我感觉得到。\n\n一种目光，沉甸甸地压在我身上。\n\n像是有什么人站在黑暗里，正看着我。",
+      "空气变得很冷。\n\n轿厢里的温度骤然下降，我呼出的气变成了白雾。"
+    ],0,()=>{
+      showChoices([
+        {text:'关门，继续乘坐',action:'f4_stay'},
+        {text:'走出电梯看看',action:'f4_exit'}
+      ]);
+    });
+  } else {
+    handleSafeFloor(4);
+  }
+}
+function floorWheelchair(f,m){
+  if(Math.random()>0.25){
+    const arrive= m==='elevator' ? "叮。\n\n门开了。" : "";
+    typewriterSeq([arrive,f+"楼。\n\n走廊空无一人。"],0,()=>handleSafeFloor(f));
+    return;
+  }
+  State.wheelchairActive=true;
+  if(m==='elevator'){
+    typewriterSeq([
+      "叮。\n\n门开了。",
+      "门外是一位坐轮椅的老人。\n\n头发花白，穿着洗得发白的棉袄，手里摇着一把蒲扇——大半夜摇蒲扇，有点奇怪。",
+      "他抬头看我，露出缺了几颗牙的笑容：「姑娘，帮我按个楼层呗？我够不着。」"
+    ],0,()=>{
+      showChoices([
+        {text:'帮他按楼层',action:'wc_help'},
+        {text:'不帮忙',action:'wc_refuse'}
+      ]);
+    });
+  } else {
+    typewriterSeq([
+      "楼梯拐角处，一位坐轮椅的老人安静地摇着蒲扇。",
+      "他不看我，只是低着头，蒲扇一摇一晃。\n\n像是在等什么人。"
+    ],0,()=>{
+      showChoices([
+        {text:'上前搭话',action:'wc_approach'},
+        {text:'继续下楼',action:'wc_down'},
+        {text:'去坐电梯',action:'wc_elev'}
+      ]);
+    });
+  }
+}
+function floor11(m){
+  if(Math.random()>0.60){
+    const arrive= m==='elevator' ? "叮。\n\n门开了。" : "";
+    typewriterSeq([arrive,"11楼。\n\n走廊安静。"],0,()=>handleSafeFloor(11));
+    return;
+  }
+  if(m==='elevator'){
+    typewriterSeq([
+      "电梯正在上升。\n\n忽然——\n\n我的手机响了。\n\n来电显示：妈妈。",
+      "我愣了一下。\n\n这个点了，妈妈怎么会打电话？\n\n我接起来。",
+      "「苏苏？这么晚怎么还没到家啊？」妈妈的声音很温柔，和平时一样。\n\n「妈，我快到了，电梯……」\n\n「你是不是又加班了？我说过你多少次了，别老加班，身体要紧。」",
+      "「妈，我知道……」\n\n「你爸今天又念叨你了。他说你想清楚没有，那个设计的工作要不要换……」",
+      "声音在变。\n\n妈妈的声线慢慢变得低沉、扭曲，像是一盘被拉慢的磁带。",
+      "「苏苏……你怎么还不回家？」\n\n「我等着你回家。」\n\n「一直等着你。」",
+      "电话那头不再有声音。\n\n但信号还通着。\n\n我能听到——呼吸声。\n\n很重的呼吸声。\n\n就在耳边。"
+    ],0,()=>die('妈妈的问候',13));
+  } else {
+    typewriterSeq([
+      "楼梯间里，我听到了一个声音。",
+      "是手机来电的铃声。\n\n从上一层转角处传来。",
+      "我走上去。\n\n转角的台阶上放着一部手机，屏幕亮着，来电显示是一串乱码。",
+      "铃声在空荡荡的楼梯间里回响，刺耳。"
+    ],0,()=>{
+      showChoices([
+        {text:'拿起手机',action:'f11_pick'},
+        {text:'不拿，快走',action:'f11_skip'}
+      ]);
+    });
+  }
+}
+function floor13(m){
+  if(m==='elevator'){
+    typewriterSeq([
+      "叮。\n\n门开了。\n\n13楼。\n\n走廊空无一人。\n\n灯光惨白。",
+      "没有人进来。\n\n我按下关门键。\n\n门没有关。\n\n我又按了一次。\n\n门缓缓合拢——但快到一半的时候，又弹开了。",
+      "像是有东西挡在门缝里。\n\n但我看不见任何东西。",
+      "「超载。」\n\n一个机械的女声从电梯的扬声器里传出。\n\n「超载。请乘客下车。」\n\n我环顾轿厢——只有我一个人。",
+      "「超载。超载。超载。」\n\n声音越来越急促。\n\n轿厢里的温度在升高。\n\n空气变得闷热。\n\n我明明只有一个人，却觉得四面八方都在挤——像是轿厢里站满了看不见的人，密密麻麻，没有一丝缝隙。\n\n透不过气了。"
+    ],0,()=>{
+      showChoices([
+        {text:'留在电梯里',action:'f13_stay'},
+        {text:'走出电梯',action:'f13_exit'}
+      ]);
+    });
+  } else {
+    handleSafeFloor(13);
+  }
+}
+function floor14(m){
+  if(m==='elevator'){
+    typewriterSeq([
+      "叮。\n\n门开了。\n\n14楼走廊。\n\n六个人。\n\n穿黑孝服。\n\n抬着一口棺材。",
+      "他们排成一列，缓缓向电梯走来。\n\n嘴里念念有词：\n\n「不孝有三，无后为大……不孝有三，无后为大……」\n\n声音低沉、整齐，像是某种丧葬的仪式。",
+      "我想按关门键，但手不听使唤。\n\n他们走到了电梯门前。\n\n棺材横在门口，挡住了出路。",
+      "棺材盖——在动。\n\n「咔……咔……」\n\n从里面被顶开。",
+      "一只枯瘦的手从棺材缝里伸出来。\n\n灰白色的皮肤，指甲很长，关节扭曲。\n\n它抓住了我的手腕。"
+    ],0,()=>die('入棺',17));
+  } else {
+    handleSafeFloor(14);
+  }
+}
+function floor16(m){
+  if(m==='elevator'){
+    typewriterSeq(["叮。\n\n门开了。","16楼。\n\n走廊空无一人。"],0,()=>handleSafeFloor(16));
+  } else {
+    if(Math.random()<0.6){
+      typewriterSeq([
+        "楼梯间里，一声微弱的哭声。\n\n是婴儿。\n\n哭声从楼上传下来，断断续续。\n\n那么晚了，谁家的婴儿在哭？",
+        "我往上走了几步，想确认一下。\n\n哭声变大了。\n\n不是变近了——是变大了。\n\n像是声源在膨胀。",
+        "越来越大。\n\n越来越尖锐。\n\n像是要刺穿耳膜。\n\n我捂住耳朵，但声音像是从骨头里传来的。\n\n我的眼前开始发黑。"
+      ],0,()=>die('婴儿的啼哭',16));
+    } else {
+      handleSafeFloor(16);
+    }
+  }
+}
+function floor18(m){
+  if(m==='elevator'){
+    typewriterSeq([
+      "叮。\n\n门开了。",
+      "18楼。",
+      "走廊的灯亮着。\n\n安安静静的，什么也没有。\n\n和普通楼道没有区别。",
+      "但——18楼？\n\n我记得这栋楼没有18楼。\n\n售楼的时候说，17楼上面直接是19楼，因为忌讳。",
+      "那这是哪里？"
+    ],0,()=>{
+      showChoices([
+        {text:'继续乘坐电梯（无视）',action:'f18_stay'},
+        {text:'走出去看看',action:'f18_exit'}
+      ]);
+    });
+  } else {
+    handleSafeFloor(18);
+  }
+}
+function floor20(m){
+  if(m==='elevator'){
+    typewriterSeq([
+      "叮。\n\n门开了。\n\n20楼。\n\n我的家。\n\n终于到了。",
+      "门外一片漆黑。\n\n不是灯坏了的那种黑——是纯粹的、绝对的黑暗。\n\n像是门外面什么都没有。\n\n但这是20楼。\n\n这是我家。",
+      "我迈出了电梯。\n\n脚下踩到的不是地砖。\n\n是虚空。\n\n我坠落了。"
+    ],0,()=>die('坠入深渊',1));
+  } else {
+typewriter('楼梯间的标识牌上没有20。\n\n19楼上面直接是21楼。\n\n二十楼不存在。',()=>handleSafeFloor(19));
+  }
+}
+function floorHeels(f,m){
+  if(m==='elevator'){
+    if(Math.random()>0.70){
+      typewriterSeq(["叮。\n\n门开了。",f+"楼。\n\n走廊安静。"],0,()=>handleSafeFloor(f));
+      return;
+    }
+    typewriterSeq([
+      "叮。\n\n门开了。",
+      "门外，走廊的地上放着一支红色高跟鞋。",
+      "很新。\n\n很亮。\n\n鞋面上没有任何灰尘。\n\n像是刚刚被脱下来放在这里的。",
+      "在昏暗的走廊灯光下，那抹红色格外刺眼。"
+    ],0,()=>{
+      showChoices([
+        {text:'视而不见，关门',action:'heels_ignore'},
+        {text:'捡起来看看',action:'heels_take'},
+        {text:'走出电梯（走楼梯）',action:'heels_exit'}
+      ]);
+    });
+  } else {
+    if(Math.random()<0.60){
+      typewriterSeq([
+        "身后传来脚步声。\n\n嗒。\n\n嗒。\n\n嗒。\n\n高跟鞋。\n\n在楼梯间里回响。",
+        "我加快脚步。\n\n身后的脚步声也快了。\n\n越来越快。\n\n越来越近。\n\n我跑了起来。\n\n高跟鞋声也跑了起来。",
+        "她追到我了。"
+      ],0,()=>die('红色高跟鞋',21));
+    } else {
+      handleSafeFloor(f);
+    }
+  }
+}
+function floor28(m){
+  if(m==='elevator'){
+    typewriterSeq([
+      "电梯在接近28楼的时候。\n\n我感觉到有什么东西在看我。\n\n轿厢的后壁是一整面不锈钢板，映着我的身影。",
+      "我看着镜中的自己。\n\n明明还年轻，眼神里却满是沧桑。\n\n她那样疲惫。",
+      "我不自觉地盯着看。\n\n是我的错觉么。\n\n眼角的细纹好像越来越多了。\n\n我凑近了不锈钢板。",
+      "突然。\n\n我笑了。\n\n不。\n\n是\"我\"笑了。",
+      "她的嘴角咧开，勾起一个诡异的弧度。\n\n然后她以肉眼可见的速度衰老着。\n\n转眼间已经满脸褶子。\n\n那是…我？"
+    ],0,()=>die('镜中人',22));
+  } else {
+    handleSafeFloor(28);
+  }
+}
+function floor30(m){
+  if(m==='elevator'){
+    typewriterSeq([
+      "叮。\n\n门开了。\n\n30楼。\n\n顶层。",
+      "我走出了电梯。\n\n走廊尽头有一扇生锈的铁栅栏门，通向天台。\n\n栅栏门锁死了，锁头锈迹斑斑。",
+      "我转身想回电梯——\n\n门关了。\n\n我拍按键，没有反应。\n\n再拍，还是没反应。\n\n面板上的灯全灭了，像是断了电。",
+      "我跑去楼梯间。\n\n防火门也被一把铁锁锁死了，纹丝不动。",
+      "我被困在了这里。\n\n铁栅栏在前，紧闭的电梯在后，锁死的楼梯在旁。\n\n不到两米宽的走廊，四面都是死路。",
+      "灯灭了。\n\n我拍打电梯门，喊救命。\n\n没有人回应。"
+    ],0,()=>die('铁栅栏',23));
+  } else {
+    typewriter('向上看去，通往30楼的楼梯被一道锈死的铁栅栏锁住了，缝隙里透进来的风带着天台的寒意。\n\n上不去。',()=>handleSafeFloor(29));
+  }
+}
+
+/* --- 死亡 --- */
+function die(reason,deathId){
+  setScene('death'); State.scene='death'; clearChoices();
+  const isNew = deathId>0 && !State.deathLog.has(deathId);
+  logDeath(deathId);
+  Audio.falling();
+  document.body.classList.add('dying');
+
+  // Auto-save to auto slot on death
+  Save.saveSlot('auto');
+
+  // After death animation, show ceremonial overlay
+  setTimeout(()=>{
+    document.body.classList.remove('dying');
+    showDeathOverlay(reason, deathId, isNew);
+  }, 1400);
+}
+
+function showDeathOverlay(reason, deathId, isNew){
+  const overlay = document.getElementById('death-overlay');
+  const deathName = (deathId>0 && CONFIG.deaths[deathId]) ? CONFIG.deaths[deathId] : reason;
+
+  // Build content with staggered animations
+  overlay.innerHTML = '';
+  const parts = [];
+
+  // Death artwork
+  if(deathId>0){
+    const art=document.createElement('img');
+    art.className='death-art';
+    art.src='images/deaths/death_'+String(deathId).padStart(2,'0')+'.webp';
+    art.alt=deathName;
+    parts.push(art);
+  }
+
+  const label = document.createElement('div');
+  label.className = 'death-label';
+  label.textContent = '—— 你失去了意识 ——';
+  parts.push(label);
+
+  const divider = document.createElement('div');
+  divider.className = 'death-divider';
+  parts.push(divider);
+
+  const name = document.createElement('div');
+  name.className = 'death-name';
+  name.textContent = deathName;
+  parts.push(name);
+
+  const loop = document.createElement('div');
+  loop.className = 'death-loop';
+  loop.textContent = '循环第 ' + State.loopCount + ' 次';
+  parts.push(loop);
+
+  if(isNew){
+    const badge = document.createElement('div');
+    badge.className = 'unlock-badge';
+    badge.textContent = '🔓 解锁新循环 · ' + State.deathLog.size + '/24';
+    parts.push(badge);
+  } else if(deathId>0){
+    const badge = document.createElement('div');
+    badge.className = 'death-label';
+    badge.style.color = 'var(--text-dim)';
+    badge.style.fontSize = '16px';
+    badge.textContent = '已收录 · ' + State.deathLog.size + '/24';
+    parts.push(badge);
+  }
+
+  const btn = document.createElement('button');
+  btn.className = 'death-btn';
+  btn.textContent = '继续 ▸';
+  btn.onclick = function(){
+    Audio.click();
+    overlay.classList.remove('visible');
+    setTimeout(function(){
+      overlay.innerHTML = '';
+      State.loopCount++; Save.save();
+      startLoop();
+    }, 300);
+  };
+  parts.push(btn);
+
+  parts.forEach(function(p){ overlay.appendChild(p); });
+
+  // Reset animation by forcing reflow
+  overlay.classList.remove('visible');
+  void overlay.offsetHeight;
+  overlay.classList.add('visible');
+}
+
+/* --- 安全楼层 --- */
+function handleSafeFloor(floor){
+  State.currentFloor=floor; State.displayedFloor=null;
+  updateLoopBar(); updateDebug();
+  const choices=[{text:'坐电梯（选楼层）',action:'elevator'}];
+  let upFloor=floor+1;
+  if(floor===19) upFloor=21;
+  if(floor===29){
+    typewriter('向上看去，通往30楼的楼梯被一道锈死的铁栅栏锁住了，缝隙里透进来的风带着天台的寒意。',()=>{
+      const choices=[{text:'坐电梯（选楼层）',action:'elevator'}];
+      choices.push({text:'走楼梯下28F',action:'stairs_down'});
+      showChoices(choices);
+    });
+    return;
+  }
+  else if(floor<30) choices.push({text:'走楼梯上'+upFloor+'F',action:'stairs_up'});
+  let downFloor=floor-1;
+  if(floor===21) downFloor=19;
+  if(floor>1) choices.push({text:'走楼梯下'+downFloor+'F',action:'stairs_down'});
+  showChoices(choices);
+}
+
+
+/* --- 走楼梯 --- */
+function takeStairs(direction){
+  setScene('stairs'); State.scene='stairs'; clearChoices();
+  let from=State.currentFloor;
+  let to=direction==='up'?from+1:from-1;
+  if(from===19&&direction==='up') to=21;
+  if(from===21&&direction==='down') to=19;
+  if(from===29&&direction==='up'){ typewriter('向上看去，通往30楼的楼梯被一道锈死的铁栅栏锁住了，缝隙里透进来的风带着天台的寒意。\n\n上不去。',()=>handleSafeFloor(29)); return; }
+  if((from===19&&to===21)||(from===21&&to===19)){
+    if(Math.random()<0.30){
+      typewriterSeq([
+        "台阶上的数字在重复。\n\n4、4、4。",
+        "不管我爬多少层，标识牌上的数字永远是4。",
+        "我跑不动了。"
+      ],0,()=>die('鬼打墙',10));
+      return;
+    }
+  }
+  if(Math.random()<0.15){
+    const evt=CONFIG.stairsEvents[Math.floor(Math.random()*CONFIG.stairsEvents.length)];
+    typewriterSeq(evt.texts,0,()=>die(evt.name,evt.deathId));
+    return;
+  }
+  typewriter('我推开防火门，走向'+to+'F。',()=>arriveAtFloor(to,'stairs'));
+}
+
+/* --- 少年演出序列 --- */
+function playBoySequence(){
+  State.scene='boy'; clearChoices();
+  const seq=CONFIG.boyTrigger.sequence;
+  let idx=0;
+  // Scene mapping for 14 segments:
+  // 0-1: elevator, 2-7: elevator (4F events), 8-9: stairs (escape+heels), 10-12: stairs/black (chase), 13: black/boy (caught)
+  const scenes=['elevator','elevator','elevator','elevator','elevator','elevator','elevator','elevator','stairs','stairs','stairs','stairs','black','black'];
+  function nextSeg(){
+    if(idx>=seq.length){ showEndScreen(); return; }
+    setScene(scenes[idx]||'black');
+    if(idx===2) Audio.ding();
+    if(idx===7) Audio.metalCreak();
+    if(idx===9) Audio.startHeartbeat(110);
+    if(idx===13) Audio.boyEntrance&&Audio.boyEntrance();
+    typewriter(seq[idx],()=>{ idx++; nextSeg(); });
+  }
+  nextSeg();
+}
+
+function showEndScreen(){
+  setScene('boy');
+  clearChoices(); el.narrative.innerHTML='';
+  // Show end sequence
+  typewriterSeq(CONFIG.boyTrigger.endSequence,0,()=>{
+    const t=document.createElement('div'); t.className='end-title'; t.textContent=CONFIG.boyTrigger.endText;
+    el.narrative.appendChild(t);
+    const b1=document.createElement('button'); b1.className='choice'; b1.textContent='下一幕';
+    b1.onclick=()=>{ Audio.click();
+      clearChoices();
+      typewriter('第二幕 · 敬请期待',()=>{ Save.reset(); location.reload(); });
+    };
+    const b2=document.createElement('button'); b2.className='choice'; b2.textContent='重新开始';
+    b2.onclick=()=>{ Audio.click(); Save.reset(); location.reload(); };
+    el.choices.appendChild(b1); el.choices.appendChild(b2);
+  });
+}
+
+/* --- 统一选择分发 --- */
+function handleChoice(c){
+  const a=c.action;
+  switch(a){
+    case 'elevator': enterElevator(); break;
+    case 'stairs': takeStairs('up'); break;
+    case 'stairs_up': takeStairs('up'); break;
+    case 'stairs_down': takeStairs('down'); break;
+    // Loop 3
+    case 'l3_refuse1':
+      typewriterSeq([
+        "工牌男极其不耐烦地「啧」了一声：「磨磨蹭蹭的。大家加班都累了一天了，赶紧的，别耽误大家时间。」",
+        "电梯里的人全都在看着我。\n\n那种沉闷的目光让我心里有些发虚。\n\n我是不是太疑神疑鬼，给别人添麻烦了？"
+      ],0,()=>{
+        showChoices([
+          {text:'「你们先上去吧。」（内心还是害怕）',action:'l3_refuse2'},
+          {text:'「算了，不耽误大家时间。」（愧疚妥协，进电梯）',action:'l3_enter'}
+        ]);
+      });
+      break;
+    case 'l3_refuse2':
+      typewriterSeq([
+        "工牌男脸色彻底阴沉下来：「你到底什么意思啊？大晚上干等你一个人，有没有公德心！」",
+        "其他人沉默着，盯着我。\n\n被所有人敌视的压迫感窒息般涌上来，比起这栋楼，眼前这群活人的怒火似乎更加真切。"
+      ],0,()=>{
+        showChoices([
+          {text:'「你们先上去吧。」（咬牙坚持）',action:'l3_refuse3'},
+          {text:'「算了，不耽误大家时间。」（实在撑不住压力，进电梯）',action:'l3_enter'}
+        ]);
+      });
+      break;
+    case 'l3_refuse3':
+      typewriterSeq([
+        "「老子特么的叫你进来！」",
+        "工牌男突然狂躁地咆哮起来！\n\n指着我的鼻子大吼：「都特么几点了？！老子想回家睡觉！给我滚进来！」",
+        "强烈的罪恶感与社会性道德绑架在这一刻彻底压垮了我。\n\n我失去了继续抗拒的勇气。"
+      ],0,()=>{
+        showChoices([
+          {text:'「这么多人，应该没问题吧。」（别无选择，进电梯）',action:'l3_enter'}
+        ]);
+      });
+      break;
+    case 'l3_enter': loop3Enter(); break;
+    // Badge man (4th+ loop)
+    case 'badge_refuse':
+      State._badgeRefuseCount = (State._badgeRefuseCount||0) + 1;
+      if(State._badgeMeetCount >= 3 && State.loopCount >= 20){
+        // Amnesia version: 3 rounds, different text
+        if(State._badgeRefuseCount >= 3){
+          typewriterSeq([
+            "工牌男突然狂躁地咆哮起来！",
+            "他彻底失控，粗暴地一把揪住我的头发，狠狠将我按倒在冰冷坚硬的地砖上！",
+            "「都特么几点了？！老子想回家睡觉！你在这装什么救世主呢！」",
+            "重击接连落下。\n\n视线在拳脚与喝骂声中急剧发黑、涣散……"
+          ],0,()=>die('特立独行',2));
+        } else if(State._badgeRefuseCount === 2){
+          typewriterSeq([
+            "工牌男脸色彻底阴沉下来：「你到底什么意思啊？大晚上干等你一个人，有没有公德心！」",
+            "其他人沉默着，盯着我。\n\n被所有人敌视的压迫感窒息般涌上来，比起这栋楼，眼前这群活人的怒火似乎更加真切。"
+          ],0,()=>{
+            showChoices([
+              {text:'「你们先上去吧。」（咬牙坚持）',action:'badge_refuse'},
+              {text:'「算了，不耽误大家时间。」（实在撑不住压力，进电梯）',action:'elev_badge_amnesia'}
+            ]);
+          });
+        } else {
+          typewriterSeq([
+            "工牌男极其不耐烦地「啧」了一声：「磨磨蹭蹭的。大家加班都累了一天了，赶紧的，别耽误大家时间。」",
+            "电梯里的人全都在看着我。\n\n那种沉闷的目光让我心里有些发虚。\n\n我是不是太疑神疑鬼，给别人添麻烦了？"
+          ],0,()=>{
+            showChoices([
+              {text:'「你们先上去吧。」（内心还是害怕）',action:'badge_refuse'},
+              {text:'「算了，不耽误大家时间。」（愧疚妥协，进电梯）',action:'elev_badge_amnesia'}
+            ]);
+          });
+        }
+      } else if(State._badgeMeetCount >= 2){
+        // 2nd+ encounter (aware): 3 rounds
+        if(State._badgeRefuseCount >= 3){
+          typewriterSeq([
+            "工牌男突然狂躁地咆哮起来！",
+            "他彻底失控，粗暴地一把揪住我的头发，狠狠将我按倒在冰冷坚硬的地砖上！",
+            "「都特么几点了？！老子想回家睡觉！你在这装什么救世主呢！」",
+            "重击接连落下。\n\n视线在拳脚与喝骂声中急剧发黑、涣散……"
+          ],0,()=>die('特立独行',2));
+        } else if(State._badgeRefuseCount === 2){
+          typewriterSeq([
+            "「我没骗你们！上次就是在这部电梯里，大家都摔下去了！求你们信我一次，走楼梯吧！」",
+            "工牌男脸色彻底阴沉下来：「你到底什么意思啊？大晚上听你一个人发疯，有没有公德心！滚开！」",
+            "周围这群「活人」的怒火与群体敌视再次如潮水般袭来。\n\n比起虚无缥缈的规则，他们的敌意压得我几乎喘不过气。"
+          ],0,()=>{
+            showChoices([
+              {text:'「我不开玩笑！我是为了救你们！」',action:'badge_refuse'},
+              {text:'「算了，我跟你们一起上去看看到底怎么回事！」',action:'elev_badge'}
+            ]);
+          });
+        } else {
+          typewriterSeq([
+            "「听我的，别上去！这电梯有问题！」",
+            "工牌男极其不耐烦地「啧」了一声：「少特么在这里说胡话！大家加班都累了一天了，赶紧的，到底进不进来？别耽误大家时间。」",
+            "电梯里所有人依旧齐刷刷地盯着我，眼神冰冷、麻木。"
+          ],0,()=>{
+            showChoices([
+              {text:'「你们听我一句劝，真的不能坐！」',action:'badge_refuse'},
+              {text:'「算了……不耽误大家时间。」',action:'elev_badge'}
+            ]);
+          });
+        }
+      } else {
+        // 1st encounter: 2 rounds
+        if(State._badgeRefuseCount >= 2){
+          typewriterSeq([
+            "我咬紧牙关，死死拽着电梯门的边缘不肯松手：「不行！我绝对不能看着你们去送死……」",
+            "「老子特么的叫你滚开！」\n\n工牌男突然狂躁地咆哮起来！",
+            "他彻底失控，粗暴地一把揪住我的头发，狠狠将我按倒在冰冷坚硬的地砖上！",
+            "「都特么几点了？！老子想回家睡觉！你在这装什么救世主呢！」",
+            "重击接连落下。\n\n视线在拳脚与喝骂声中急剧发黑、涣散……"
+          ],0,()=>die('特立独行',2));
+        } else {
+          typewriterSeq([
+            "我张开双臂挡在电梯门前，声撕力竭：「你们听我说！这电梯门一开就会踩空！求求你们听我一次，不要进电梯！」",
+            "工牌男的脸色彻底阴沉下来，跨上前一步逼视着我：「你到底什么意思啊？大晚上听你一个人在这里说梦话，有没有公德心啊！」",
+            "其他几个人依然死寂地沉默着，眼神冷冰冰地聚焦在我身上。\n\n被所有人当成疯子敌视的压迫感窒息般涌上来。\n\n比起这栋楼的诡异，眼前这群「活人」的怒火显得更加真切而刺骨。"
+          ],0,()=>{
+            showChoices([
+              {text:'不行，我一定要劝他们！哪怕强行按住关门键！（死不让步）',action:'badge_refuse'},
+              {text:'算了……也许这次不一样呢？（放弃劝阻，妥协进电梯）',action:'elev_badge'}
+            ]);
+          });
+        }
+      }
+      break;
+    case 'elev_badge': 
+      setScene('elevator'); State.scene='elevator'; clearChoices();
+      typewriterSeq([
+        "我最终还是低着头，在他们的注视下踩进了电梯。",
+        "在上升的过程中，我极力劝说他们：「待会儿门开了千万别直接走，先看清楚脚下！」"
+      ],0,()=>{
+        Audio.ding();
+        typewriterSeq([
+          "叮。\n\n7楼到了。",
+          "一个男人面无表情地迈步走了出去，稳稳踩在了走廊的地毯上。",
+          "电梯里有人冷笑了一声：「呵，看吧，人家这不是好好的进去了吗？疯子。」",
+          "我僵在原地，看着那个男人越走越远，背影逐渐融入走廊深处。\n\n难道……这次真的没问题？",
+          "我咬了咬牙——如果是真的，那我也跟他一起在这里下楼！\n\n「等等我！」",
+          "我跟着他的脚步，迫不及待地迈出了右脚。\n\n鞋底踩下去的瞬间。\n\n虚无。\n\n没有地砖，没有地毯。\n\n整个世界，在这一刻瞬间扭曲崩塌！\n\n重力将我拽入万丈深渊。\n\n风声在耳边狂吼。\n\n我又看见了……好多人。"
+        ],0,()=>die('坠入深渊',1));
+      });
+      break;
+    // Hooded man
+
+    case 'badge_stairs':
+      typewriterSeq([
+        "我后退了一步，避开他们死沉的视线：「你们自己上去吧，我走楼梯。」",
+        "工牌男极其不耐烦地「啧」了一声：「切，神经病，有电梯不坐爬楼梯，耽误大家时间。」",
+        "电梯门无声地合上了。\n\n我看着空荡荡的电梯厅，轻了一口气。\n\n虽然不知道那个风衣女人去了哪里，但至少这一次，我没有被他们牵着鼻子走。",
+        "我转身，走向了深处的楼梯间……\n\n推开2楼的防火门，走廊里一个人也没有。"
+      ],0,()=>{ State.currentFloor=2; handleSafeFloor(2); });
+      break;
+    case 'elev_hooded':
+      setScene('elevator'); State.scene='elevator'; clearChoices();
+      typewriterSeq([
+        "我压下心底的怪异，走向电梯。\n\n那个男人也跟在我身后进了电梯。",
+        "他站在电梯一角，没有要按下楼层的意思。\n\n我咬牙看向面板。"
+      ],0,()=>{
+        clearChoices();
+        const wrap=document.createElement('div'); wrap.className='panel-wrap';
+        const grid=document.createElement('div'); grid.className='panel-grid';
+        for(let i=1;i<=30;i++){
+          const btn=document.createElement('button'); btn.className='panel-btn'; btn.textContent=i;
+          btn.onclick=function(){
+            Audio.click();
+            document.querySelectorAll('.panel-btn').forEach(function(b){b.style.pointerEvents='none';});
+            clearChoices();
+            var fl=i;
+            typewriterSeq([
+              "电梯开始上升。\n\n显示屏上的数字在跳。\n\n那个男人依旧没有按下任何楼层。\n\n他就静静伫立在我身后，一动不动。",
+              "我忍不住开口：「你到几楼？」\n\n「好巧，跟你一层。」\n\n叮——\n"+fl+"楼到了。",
+              "我做出手势，示意他先请。\n\n他缓步踏出电梯。\n\n待他走出电梯视野范围。",
+              "我疯狂按下关门键。\n\n门板飞速向中间合拢。\n\n就在缝隙只剩最后一寸的刹那——",
+              "砰！\n\n一只骨节粗大的手，抵住了闭合的电梯门。\n\n缝隙被强行撑开。",
+              "低垂的兜帽缓缓抬起。\n\n阴影里，裂开一抹阴森至极的笑。\n\n绝望瞬间吞噬全身。"
+            ],0,()=>die('路遇歹人',3));
+          };
+          grid.appendChild(btn);
+        }
+        wrap.appendChild(grid);
+        const hint=document.createElement('div'); hint.className='hint'; hint.textContent='选择一个按键按下……';
+        wrap.appendChild(hint);
+        el.choices.appendChild(wrap);
+      });
+      break;
+    case 'elev_badge_amnesia':
+      setScene('elevator'); State.scene='elevator'; clearChoices();
+      typewriterSeq([
+        "「算了，不耽误大家时间。」\n\n我心里升起一股微小的愧疚，连忙低下头，迈步踏入了轿厢。",
+        "电梯门在身后无声地合拢。\n\n狭小的空间里安静得有些沉闷。",
+        "但看着这群穿着工作服、散发着疲惫气味的「邻居」，我心里反倒踏实了不少。\n\n大家都只是加班到深夜、急着回家休息的普通人而已，我刚才到底在瞎害怕什么呢？",
+        "我抬起手，按下了20楼。"
+      ],0,()=>{
+        Audio.ding();
+        typewriterSeq([
+          "叮。\n\n7楼到了。\n\n一个男人面无表情地走了出去，沉闷的脚步声消失在走廊深处。"
+        ],0,()=>{
+          Audio.ding();
+          typewriterSeq([
+            "叮。\n\n11楼到了。\n\n又一个工牌男低着头迈步出了电梯。",
+            "看着他们一个个顺利离开，我紧绷的神经彻底松弛下来。\n\n这栋楼一切正常，刚才那点说不清的抗拒，果然只是我加班太累产生的幻觉。"
+          ],0,()=>{
+            Audio.ding();
+            typewriterSeq([
+              "叮。\n\n20楼到了。\n\n提示音清脆响起，金属门向两侧平滑展开。",
+              "「终于到了……」\n\n我揉了揉酸胀的太阳穴，嘴角微微上扬，迫不及待地迈出了右脚——",
+              "鞋底踩下去的瞬间。\n\n踩空了。\n\n脚下没有坚硬的地砖，只有纯粹而巨大的虚无。",
+              "失重感在瞬息间拉着我向万丈深渊坠落。\n\n风声在耳边狂吼。",
+              "在视线彻底被绝对黑暗吞噬的前一秒，我心中没有恐惧，只有一股铺天盖地的茫然与空洞——\n\n奇怪……\n\n为什么……会这样？"
+            ],0,()=>die('坠入深渊',1));
+          });
+        });
+      });
+      break;
+    case 'stairs_hooded':
+      setScene('stairs'); State.scene='stairs'; clearChoices();
+      typewriterSeq([
+        "我不敢多留，转身推开楼梯间的防火门，冲了进去。\n\n我不敢回头确认那个男人有没有跟上来。\n\n只顾埋头拼命往上跑。",
+        "二楼。\n\n三楼。\n\n四楼。\n\n恐惧悬在头顶，我不敢停下一秒。\n\n一直冲到五楼。",
+        "我猛地推开防火门，跌靠在墙面。\n\n大口喘息，手脚发软。"
+      ],0,()=>{
+        showChoices([
+          {text:'坐电梯',action:'hooded_elev_5f'},
+          {text:'继续走楼梯',action:'hooded_stairs_5f'}
+        ]);
+      });
+      break;
+    case 'hooded_elev_5f':
+      setScene('elevator'); State.scene='elevator'; clearChoices();
+      typewriterSeq([
+        "我松了口气，快步走进电梯。",
+        "轿厢里空空荡荡，只有我一个人。",
+        "我抬手按下楼层。"
+      ],0,()=>{
+        clearChoices();
+        const wrap=document.createElement('div'); wrap.className='panel-wrap';
+        const grid=document.createElement('div'); grid.className='panel-grid';
+        for(let i=1;i<=30;i++){
+          const btn=document.createElement('button'); btn.className='panel-btn'; btn.textContent=i;
+          btn.onclick=function(){
+            Audio.click();
+            document.querySelectorAll('.panel-btn').forEach(function(b){b.style.pointerEvents='none';});
+            clearChoices();
+            var fl=i;
+            if(fl<10){
+              typewriterSeq([
+                "电梯缓缓上行。\n\n一路平静得过分。\n\n叮——\n"+fl+"楼到了。\n\n电梯门缓缓打开。",
+                "兜帽男人直直站在门外。\n\n在我视线对上他的一瞬间。\n\n低垂的兜帽缓缓抬起。",
+                "阴影里，裂开一抹阴森至极的笑。\n\n「你逃不掉的。」"
+              ],0,()=>die('路遇歹人',3));
+            } else {
+              typewriterSeq([
+                "电梯缓缓上行。\n\n数字一路向上跳动。\n\n一路平静得过分。",
+                "叮——\n"+fl+"楼到了。\n\n电梯门缓缓打开。"
+              ],0,()=>{
+                State.currentFloor=fl; State.displayedFloor=fl; updateLoopBar(); updateDebug();
+                arriveAtFloor(fl,'elevator');
+              });
+            }
+          };
+          grid.appendChild(btn);
+        }
+        wrap.appendChild(grid);
+        const hint=document.createElement('div'); hint.className='hint'; hint.textContent='选择一个按键按下……';
+        wrap.appendChild(hint);
+        el.choices.appendChild(wrap);
+      });
+      break;
+    case 'hooded_stairs_5f':
+      setScene('stairs'); State.scene='stairs'; clearChoices();
+      typewriterSeq([
+        "我不敢赌电梯，选择继续往上跑。\n\n六楼。\n\n七楼。\n\n……\n\n我终于爬不动了。",
+        "就在这时。\n\n楼下，传来了声音。\n\n不急不缓的脚步声。\n\n有人……追上来了。",
+        "我心脏骤然炸裂，拼尽最后力气狂奔。\n\n可双腿早已发软，根本跑不动。",
+        "彻底漆黑的楼道里。\n\n一只手。\n\n抓住了我的脚踝。"
+      ],0,()=>die('路遇歹人',3));
+      break;
+    // Break 20
+    case 'break20_press':
+      Audio.metalCreak();
+      typewriterSeq([
+        "我用力一按——",
+        "「咔。」",
+        "20的按键塌了下去，掉进了面板的缝隙里。\n\n面板后面发出一阵不正常的嗡鸣。",
+        "电梯开始震动。\n\n越来越剧烈。\n\n显示屏上的数字开始疯跳——25、28、30——",
+        "还在加速。\n\n冲顶了。"
+      ],0,()=>die('电梯冲顶',5));
+      break;
+    case 'break20_other':
+      clearChoices();
+      { const panel=State.currentPanel;
+        const wrap=document.createElement('div'); wrap.className='panel-wrap';
+        const grid=document.createElement('div'); grid.className='panel-grid';
+        panel.buttons().forEach(b=>{
+          if(b.floor===20) return;
+          const btn=document.createElement('button'); btn.className='panel-btn';
+          btn.textContent=b.label;
+          btn.onclick=()=>{Audio.click();onPanelButton(b,btn);};
+          grid.appendChild(btn);
+        });
+        wrap.appendChild(grid);
+        const hint=document.createElement('div'); hint.className='hint';
+        hint.textContent='选择一个按键按下……';
+        wrap.appendChild(hint);
+        el.choices.appendChild(wrap);
+      }
+      break;
+    // 4F
+    case 'f4_stay':
+      typewriterSeq([
+        "我按下关门键。\n\n门缓缓合拢。\n\n就在门即将关闭的那一瞬间——",
+        "电梯内壁的不锈钢板上，映出了我的倒影。\n\n但倒影的身后，多了一个轮廓。\n\n我猛地转头。\n\n身后什么都没有。",
+        "再看不锈钢板——倒影里，一只手正从我的身后伸过来，慢慢勒住了我的脖子。\n\n我摸不到那只手。\n\n但我的脖子真的被勒住了。"
+      ],0,()=>die('看不见的乘客',9));
+      break;
+    case 'f4_exit':
+      typewriterSeq([
+        "我迈出了电梯。\n\n走廊漆黑。冷。\n\n但什么也没有发生。",
+        "我沿着走廊走了一段。安静。\n\n只有我自己的脚步声。\n\n没有人。\n\n也许是我想多了。\n\n我松了一口气，转身想回电梯——",
+        "走廊尽头。\n\n一个黑影。\n\n一闪而过。",
+        "我的血一下子凉了。\n\n我不再犹豫，冲向楼梯间。"
+      ],0,()=>{
+        State.currentFloor=4;
+        takeStairs('up');
+      });
+      break;
+    // 18F
+    case 'f18_stay': handleSafeFloor(18); break;
+    case 'f18_exit':
+      typewriterSeq([
+        "我走出了电梯。\n\n走廊看起来很正常。\n\n但越往里走，灯越暗。",
+        "我停下了脚步。\n\n不对。\n\n我转身想回电梯——\n\n电梯门紧闭。\n\n按钮不亮了。",
+        "显示屏上的数字——不是18。\n\n是-18。",
+        "走廊里的灯全灭了。\n\n黑暗在向我逼近。\n\n空气变得冰冷刺骨。\n\n铁锈的气味。",
+        "墙壁上用红色的漆写着：「欢迎来到地狱」。"
+      ],0,()=>die('欢迎来到地狱',18));
+      break;
+    // Wheelchair
+    case 'wc_help':
+      typewriterSeq([
+        "我帮他按了一个楼层。\n\n电梯继续上升。",
+        "「谢谢你啊姑娘。」老人笑呵呵的，像是拉家常一样问我，「你住几楼啊？」",
+        "「二十楼。」",
+        "「二十楼好。二十楼……」他念叨了几遍，像是在品味这个数字。",
+        "电梯停了。\n\n老人看了看门外：「我到了。姑娘，劳烦你推我出去呗？我这轮椅，门槛过不去。」"
+      ],0,()=>{
+        showChoices([
+          {text:'推他出去',action:'wc_push'},
+          {text:'婉拒',action:'wc_decline'}
+        ]);
+      });
+      break;
+    case 'wc_refuse':
+      typewriterSeq([
+        "我犹豫了一下，摇了摇头：「不好意思，我赶时间。」",
+        "老人的笑容凝固了。",
+        "蒲扇停了。\n\n他看着我，眼神从和善变成了某种说不清的东西。",
+        "「年轻人……不尊老啊。」",
+        "蒲扇猛地拍在我的脸上。\n\n一下，两下。\n\n蒲扇的竹骨像刀片一样锋利。"
+      ],0,()=>die('不尊老',11));
+      break;
+    case 'wc_push':
+      typewriterSeq([
+        "我推着轮椅走出了电梯。\n\n走廊很暗。\n\n我推着轮椅往前走了几步，忽然觉得不对——\n\n轮椅变轻了。",
+        "我低头一看。\n\n轮椅上空了。\n\n老人不见了。\n\n我身后传来声音：「谢谢你……陪我。」",
+        "一只枯瘦的手抓住了我的脚踝。\n\n我低头看——走廊的地面上，伸出无数只枯手，正从地砖的缝隙里爬出来。",
+        "它们拉住了我的腿、我的腰、我的手臂。\n\n「留下来……陪我们……」"
+      ],0,()=>die('空巢老人的陪伴',12));
+      break;
+    case 'wc_decline':
+      typewriterSeq([
+        "「不好意思，我赶时间。」我退后一步。",
+        "老人笑了笑：「没事没事。姑娘慢走。」",
+        "他独自摇着轮椅走出了电梯，蒲扇一摇一晃的，消失在走廊的黑暗中。",
+        "门关了。\n\n我安全了。"
+      ],0,()=>{
+        showChoices([
+          {text:'按别的楼层',action:'elevator'},
+          {text:'走楼梯',action:'stairs'}
+        ]);
+      });
+      break;
+    case 'wc_approach':
+      typewriterSeq([
+        "「大爷，您……需要帮忙吗？」\n\n老人抬起头，看着我。\n\n他的眼睛很浑浊，像蒙了一层雾。",
+        "「姑娘……你也不回家吗？」\n\n他伸出手，握住了我的手腕。\n\n手像冰一样凉。\n\n「留下来……陪我聊聊天吧。我很久没人说话了。」",
+        "我想挣脱，但他的力气大得惊人。\n\n蒲扇从手中滑落，他另一只手也抓住了我。\n\n走廊的灯灭了。"
+      ],0,()=>die('空巢老人的陪伴',12));
+      break;
+    case 'wc_down':
+      typewriter('我继续下楼。',()=>{ const f=State.currentFloor-1; arriveAtFloor(f,'stairs'); });
+      break;
+    case 'wc_elev': enterElevator(); break;
+    // 11F
+    case 'f11_pick':
+      typewriterSeq([
+        "我拿起了手机，接通。\n\n「苏苏？怎么不接电话？」\n\n妈妈的声音。\n\n但不对。\n\n这手机不是我的。\n\n她怎么知道我在这里？",
+        "「妈……？」\n\n「你怎么不接电话？」\n\n「我——」\n\n「为什么不接电话？！」",
+        "声音炸开了。\n\n不是从手机里——是从楼梯间的四面八方传来。\n\n墙壁在震动。\n\n台阶在震动。\n\n我的耳膜快被震破了。"
+      ],0,()=>die('妈妈的问候',13));
+      break;
+    case 'f11_skip':
+      typewriterSeq([
+        "我转身就走，快步往下跑。\n\n铃声在身后越来越响。\n\n越来越急。",
+        "然后——铃声停了。\n\n我的口袋里，自己的手机亮了。\n\n来电显示：乱码。",
+        "我颤抖着接起来。\n\n「你为什么不接电话？」"
+      ],0,()=>die('午夜来电',14));
+      break;
+    // 13F
+    case 'f13_stay':
+      typewriterSeq([
+        "门终于合上了。\n\n轿厢开始运行。\n\n但那种挤压感没有消失。\n\n空气越来越稀薄。\n\n像是被无数看不见的人呼吸着。",
+        "「超载。」\n\n声音停了。\n\n我感觉自己呼吸不过来了。"
+      ],0,()=>die('超载',15));
+      break;
+    case 'f13_exit':
+      typewriterSeq([
+        "我冲出了电梯。\n\n窒息感瞬间消失。\n\n我蹲在走廊上大口呼吸着新鲜的空气，身后的电梯门缓缓合拢。"
+      ],0,()=>handleSafeFloor(13));
+      break;
+
+    // Heels
+    case 'heels_ignore':
+      State.heelsIgnored++; updateDebug();
+      if(State.heelsIgnored>=2){
+        typewriterSeq([
+          "电梯正在运行。\n\n忽然——\n\n停了。\n\n灯灭了。\n\n轿厢里一片漆黑。",
+          "然后我听到了——高跟鞋的声音。\n\n嗒、嗒、嗒。\n\n在轿厢里。\n\n不是从外面传来的。\n\n是在轿厢里面。",
+          "就在我身后。\n\n一只冰冷的手搭上了我的肩膀。\n\n她的声音在我耳边响起：\n\n「你为什么不理我？」"
+        ],0,()=>die('高跟鞋的报复',19));
+      } else {
+        typewriterSeq([
+          "我按下关门键。\n\n门缓缓合拢。",
+          "在门即将关闭的瞬间，我好像看到——高跟鞋动了一下。",
+          "不，是风吹的。\n\n一定是风。"
+        ],0,()=>{
+          const panel=pickPanel(); State.currentPanel=panel;
+          typewriter(panel.desc,()=>renderPanel(panel));
+        });
+      }
+      break;
+    case 'heels_take':
+      typewriterSeq([
+        "我弯腰捡起了那只高跟鞋。\n\n红色。很漂亮。\n\n拿在手里很轻，皮面光滑得像没有重量。\n\n看起来很贵。\n\n我能想象它穿在脚上的样子——一定很美。",
+        "突然，我感觉脚有点勒。\n\n低头一看——\n\n我的手上空空如也，而脚上不知何时穿上了一双红色的高跟鞋。\n\n鲜红欲滴。\n\n我惊恐地想要把它脱下来，它却像焊在我脚上一样，怎么都脱不下来……"
+      ],0,()=>die('高跟鞋的喜爱',20));
+      break;
+    case 'heels_exit': 
+      typewriterSeq([
+        "我绕过那只高跟鞋，快步走向楼梯间。"
+      ],0,()=>takeStairs('up')); 
+      break;
+    // E9: elevator stuck
+    case 'e9_wait':
+      if(Math.random()<0.5){
+        typewriterSeq([
+          "我决定留在电梯里等待。\n\n电梯故障的时候，切莫自乱阵脚。\n\n也许是临时故障，一会儿就好了。",
+          "一分钟过去了。\n\n两分钟过去了。\n\n灯管开始发出电流的嗡鸣声。\n\n越来越刺耳。",
+          "然后——\n\n一声闷响。\n\n电梯抖了一下。\n\n失重感从脚底窜上来。",
+          "我的身体飘了起来。\n\n灯管在闪烁，轿厢在自由落体。\n\n胃像被一只手攥住。\n\n我想抓住扶手，但手指抓空了。",
+          "撞击地面的那一瞬间，我什么都听不见了。"
+        ],0,()=>die('电梯坠落',6));
+      } else {
+        typewriterSeq([
+          "我决定留在电梯里等待。\n\n电梯故障的时候，切莫自乱阵脚。\n\n也许是临时故障，一会儿就好了。",
+          "一分钟过去了。\n\n两分钟过去了。\n\n灯管开始发出电流的嗡鸣声。\n\n越来越刺耳。",
+          "然后——\n\n电梯动了。\n\n在往上走。\n\n越来越快。",
+          "不是正常的加速——是那种钢缆断裂、制动失灵的疯狂加速。\n\n我被甩到了地板上。\n\n显示屏上的数字在跳，快到来不及看清。",
+          "头顶的楼板越来越近。\n\n30层的天花板。\n\n撞击。"
+        ],0,()=>die('电梯冲顶',5));
+      }
+      break;
+    case 'e9_pry':
+      if(Math.random()<0.60){
+        typewriterSeq([
+          "不行，不能坐以待毙。\n\n我把手指塞进门缝。\n\n用力扒，门缓缓被我撑开一条缝。\n\n冷风从缝隙灌进来。",
+          "我侧着身子往外挤。\n\n半边身子出去了。\n\n另一半还在轿厢里。",
+          "就在这时——\n\n电梯动了。\n\n糟糕！",
+          "门，夹住了我的腰。\n\n电梯开始上升。\n\n我被夹在门和门框之间，跟着轿厢一起往上走。\n\n不要！"
+        ],0,()=>die('电梯门剪切',7));
+      } else {
+        typewriterSeq([
+          "不行，不能坐以待毙。\n\n我把手指塞进门缝。\n\n用力扒，门缓缓被我撑开一条缝。\n\n冷风从缝隙灌进来。",
+          "我侧着身子挤了出去。\n\n脚踩在了下一层楼的走廊地板上。",
+          "身后，电梯门缓缓合拢。\n\n轿厢开始自行运行，向下沉去。\n\n越来越远。"
+        ],0,()=>{
+          var f=State.currentFloor||2;
+          arriveAtFloor(f,'stairs');
+        });
+      }
+      break;
+    default: console.warn('Unknown action:',a);
+  }
+}
+
+/* ========== INIT ========== */
+function showTitleScreen(){
+  setScene('title');
+  BGM.play('kunju');
+  document.getElementById('menu-btn').style.display='none';
+}
+
+/* --- 菜单功能 --- */
+function toggleMenu(){
+  const panel=document.getElementById('menu-panel');
+  panel.classList.toggle('visible');
+  if(panel.classList.contains('visible')) updateMenu();
+}
+function updateMenu(){
+  document.getElementById('menu-loop').textContent=State.loopCount;
+  const audioBtn=document.getElementById('menu-audio-toggle');
+  audioBtn.textContent=Audio.enabled?'🔊 音效开启':'🔇 音效关闭';
+}
+function returnToTitle(){
+  document.getElementById('menu-panel').classList.remove('visible');
+  Save.save();
+  BGM.play('kunju');
+  document.getElementById('title-screen').classList.remove('hidden');
+  setScene('title');
+}
+function confirmReset(){
+  document.getElementById('menu-panel').classList.remove('visible');
+  clearChoices();
+  el.narrative.innerHTML='';
+  typewriter('确定要重置存档吗？所有进度将丢失。',()=>{
+    showChoices([
+      {text:'确认重置',action:'_confirm_reset'},
+      {text:'取消',action:'_cancel_reset'}
+    ]);
+  });
+}
+function toggleAudioFromMenu(){
+  if(!Audio.ctx) Audio.init();
+  const e=Audio.toggle();
+  if(e){BGM.resume();}else{BGM.stop();}
+  updateMenu();
+  if(e&&Audio.ctx){ const c=SCENE_CFG[State.scene]||{}; if(c.ambient)Audio.startAmbient(); if(c.heartbeat)Audio.startHeartbeat(c.heartbeat); }
+}
+function setVolume(v){
+  v=v/100;
+  if(!Audio.ctx) Audio.init();
+  Audio.setVolume(v);
+}
+
+document.getElementById('start-btn').addEventListener('click',()=>{
+  Audio.init(); Audio.click(); Audio.startAmbient();
+  document.getElementById('title-screen').classList.add('hidden');
+  document.getElementById('menu-btn').style.display='block';
+  setTimeout(()=>startGame(),600);
+});
+document.getElementById('codex-btn-title').addEventListener('click',()=>{
+  Audio.click(); Save.load(); showDeathCodex();
+});
+document.getElementById('codex-close').addEventListener('click',()=>{
+  Audio.click(); hideDeathCodex();
+});
+document.getElementById('save-close').addEventListener('click',()=>{
+  Audio.click(); hideSavePanel();
+});
+document.getElementById('menu-btn').addEventListener('click',(e)=>{
+  e.stopPropagation();
+  toggleMenu();
+});
+document.addEventListener('click',(e)=>{
+  // Close menu when clicking outside
+  if(!e.target.closest('#menu-panel')&&!e.target.closest('#menu-btn')){
+    document.getElementById('menu-panel').classList.remove('visible');
+  }
+});
+
+/* ========== DEBUG ========== */
+const DBG={
+  forceBoy(){ document.getElementById('menu-panel').classList.remove('visible'); State.boyTriggered=true; typewriter('[DEBUG] 少年触发已强制。下次进电梯将触发。',()=>{}); },
+  skipTo31(){ document.getElementById('menu-panel').classList.remove('visible'); State.loopCount=31; Save.save(); typewriter('[DEBUG] 已跳到循环31。下次失去意识后触发。',()=>{}); },
+  resetSave(){ Save.reset(); location.reload(); },
+  showDeathPicker(){
+    document.getElementById('menu-panel').classList.remove('visible');
+    clearChoices();
+    el.narrative.innerHTML='';
+    typewriter('[DEBUG] 选择要触发的死法：',()=>{
+      const deaths=CONFIG.deaths;
+      const choices=[];
+      for(const id in deaths){
+        if(deaths.hasOwnProperty(id)){
+          choices.push({text:'#'+id+' '+deaths[id],action:'_debug_death_'+id});
+        }
+      }
+      choices.push({text:'取消',action:'_debug_cancel'});
+      showChoices(choices);
+    });
+  },
+  triggerDeath(id){
+    clearChoices();
+    el.narrative.innerHTML='';
+    const name=CONFIG.deaths[id]||'未知';
+    typewriter('[DEBUG] 触发：#'+id+' '+name,()=>{
+      die(name,parseInt(id));
+    });
+  }
+};
+
+/* --- 循环图鉴 --- */
+function showDeathCodex(){
+  const overlay=document.getElementById('codex-overlay');
+  const grid=document.getElementById('codex-grid');
+  const progress=document.getElementById('codex-progress');
+  grid.innerHTML='';
+  const unlocked=State.deathLog.size;
+  progress.textContent=unlocked+' / 24';
+  for(let i=1;i<=24;i++){
+    const cell=document.createElement('div');
+    const isUnlocked=State.deathLog.has(i);
+    cell.className='codex-cell '+(isUnlocked?'unlocked':'locked');
+    if(isUnlocked){
+      cell.style.backgroundImage="url('images/deaths/death_"+String(i).padStart(2,'0')+".webp')";
+      const ov=document.createElement('div'); ov.className='cell-overlay'; cell.appendChild(ov);
+    }
+    const num=document.createElement('div');
+    num.className='cell-num';
+    num.textContent=String(i).padStart(2,'0');
+    const name=document.createElement('div');
+    name.className='cell-name';
+    name.textContent=isUnlocked?CONFIG.deaths[i]:'？';
+    cell.appendChild(num);
+    cell.appendChild(name);
+    grid.appendChild(cell);
+  }
+  overlay.classList.add('visible');
+}
+function hideDeathCodex(){
+  document.getElementById('codex-overlay').classList.remove('visible');
+}
+
+/* --- 存档/读档面板 --- */
+function showSavePanel(){
+  document.getElementById('menu-panel').classList.remove('visible');
+  const overlay=document.getElementById('save-overlay');
+  const container=document.getElementById('save-slots');
+  const slots=Save.getSlots();
+  const slotDefs=[
+    {key:'auto',label:'自动存档'},
+    {key:'slot1',label:'存档位 1'},
+    {key:'slot2',label:'存档位 2'},
+    {key:'slot3',label:'存档位 3'}
+  ];
+  container.innerHTML='';
+  slotDefs.forEach(def=>{
+    const data=slots[def.key];
+    const slot=document.createElement('div');
+    slot.className='save-slot '+(data?'':'empty');
+    let html='<div class="save-slot-info">';
+    html+='<div class="save-slot-name">'+def.label+'</div>';
+    if(data){
+      html+='<div class="save-slot-detail">循环第 '+data.loopCount+' 次 · 循环 '+data.deathLog.length+'/24 · '+data.time+'</div>';
+    } else {
+      html+='<div class="save-slot-detail">— 空 —</div>';
+    }
+    html+='</div>';
+    html+='<div class="save-slot-actions">';
+    if(def.key!=='auto'){
+      html+='<button class="save-slot-btn" onclick="saveToSlot(\''+def.key+'\')">💾 保存</button>';
+    } else {
+      html+='<div style="font-size:14px;color:var(--text-dim);padding:6px 0;">游戏自动保存</div>';
+    }
+    if(data){
+      html+='<button class="save-slot-btn" onclick="loadFromSlot(\''+def.key+'\')">📖 读取</button>';
+      if(def.key!=='auto'){
+        html+='<button class="save-slot-btn danger" onclick="deleteSlot(\''+def.key+'\')">✕ 删除</button>';
+      }
+    }
+    html+='</div>';
+    slot.innerHTML=html;
+    container.appendChild(slot);
+  });
+  overlay.classList.add('visible');
+}
+function hideSavePanel(){
+  document.getElementById('save-overlay').classList.remove('visible');
+}
+function saveToSlot(key){
+  Save.saveSlot(key);
+  Audio.click();
+  showSavePanel();
+}
+function loadFromSlot(key){
+  Audio.click();
+  if(Save.loadSlot(key)){
+    hideSavePanel();
+    document.getElementById('title-screen').classList.add('hidden');
+    document.getElementById('menu-btn').style.display='block';
+    startGame();
+  }
+}
+function deleteSlot(key){
+  Save.deleteSlot(key);
+  Audio.click();
+  showSavePanel();
+}
+
+// Handle reset confirmation and debug choices
+const _origHandleChoice = handleChoice;
+handleChoice = function(c){
+  if(c.action==='_confirm_reset'){ clearChoices(); typewriter('存档已清除。',()=>{ Save.reset(); location.reload(); }); return; }
+  if(c.action==='_cancel_reset'){ clearChoices(); el.narrative.innerHTML=''; startLoop(); return; }
+  if(c.action==='_debug_cancel'){ clearChoices(); el.narrative.innerHTML=''; startLoop(); return; }
+  if(c.action && c.action.startsWith('_debug_death_')){
+    const id=c.action.replace('_debug_death_','');
+    DBG.triggerDeath(parseInt(id));
+    return;
+  }
+  _origHandleChoice(c);
+};
+
+showTitleScreen();
+</script>
+</body>
+</html>
