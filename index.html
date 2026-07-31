@@ -291,6 +291,13 @@ const BGM={
       this.audio.volume=0;
       this.audio.play().catch(function(){});
       this.fadeTo(this.targetVol,1000);
+    } else if(this.current){
+      this.audio=this._get(this.current);
+      this.audio.volume=0;
+      this.audio.play().catch(function(){});
+      this.fadeTo(this.targetVol,1000);
+    } else {
+      this.updateForScene();
     }
   },
   updateForScene(){
