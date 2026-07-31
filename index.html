@@ -12,6 +12,7 @@
 <link rel="preload" as="image" href="images/scenes/scene_boy_end.webp">
 <link rel="preload" as="audio" href="audio/kunju.mp3">
 <link rel="preload" as="audio" href="audio/weizhi.mp3">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 :root{--bg:#0f0f14;--bg-deep:#08080c;--gold:#b98a38;--gold-bright:#d4a84a;--text:#e8e4dc;--text-dim:#8a857c;--blood:#8b1a1a;--blood-bright:#c0392b}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -92,6 +93,24 @@ button.choice:hover{border-color:var(--gold);background:rgba(185,138,56,0.1);col
 .codex-cell.locked .cell-name{color:rgba(138,133,124,0.3)}
 #codex-close{position:fixed;top:16px;right:16px;z-index:201;font-size:22px;cursor:pointer;background:rgba(15,15,20,0.8);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:6px 12px;color:var(--text)}
 #codex-close:hover{border-color:var(--gold);color:var(--gold)}
+/* —— 结算页面 —— */
+#settlement-overlay{position:fixed;inset:0;z-index:210;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,rgba(26,21,16,0.85),rgba(15,15,20,0.95) 50%,rgba(8,8,12,0.98)),url('images/scenes/scene_boy_end.webp') center/cover no-repeat fixed;overflow-y:auto}
+#settlement-overlay.visible{display:flex;animation:fadeIn 0.8s}
+#settlement-content{max-width:800px;width:100%;padding:40px 30px;text-align:center}
+.settlement-title{font-size:36px;color:var(--gold);letter-spacing:12px;margin-bottom:6px;text-shadow:0 0 20px rgba(185,138,56,0.3)}
+.settlement-subtitle{font-size:18px;color:var(--text-dim);letter-spacing:4px;margin-bottom:24px}
+.settlement-progress-wrap{margin-bottom:28px}
+.settlement-count{font-size:64px;color:var(--gold-bright);font-weight:bold;text-shadow:0 0 30px rgba(212,168,74,0.4)}
+.settlement-total{font-size:28px;color:var(--text-dim);margin-left:4px}
+.settlement-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:32px}
+.settlement-grid .codex-cell{aspect-ratio:1}
+.settlement-actions{display:flex;flex-direction:column;align-items:center;gap:14px}
+.settlement-btn{font-family:inherit;font-size:22px;cursor:pointer;letter-spacing:4px;padding:12px 48px;border-radius:2px;transition:all 0.2s}
+.settlement-btn.save{color:var(--gold);background:rgba(15,15,20,0.8);border:1px solid var(--gold)}
+.settlement-btn.save:hover{background:rgba(185,138,56,0.15);color:var(--gold-bright)}
+.settlement-btn.continue{color:var(--text-dim);background:transparent;border:1px solid rgba(138,133,124,0.3)}
+.settlement-btn.continue:hover{border-color:var(--text-dim);color:var(--text)}
+.settlement-warning{font-size:16px;color:var(--text-dim);letter-spacing:2px;opacity:0.6;margin-top:4px}
 
 /* —— 标题画面图鉴按钮 —— */
 #codex-btn-title{font-family:inherit;font-size:18px;color:var(--text-dim);background:transparent;border:1px solid rgba(185,138,56,0.2);padding:8px 24px;cursor:pointer;letter-spacing:3px;margin-top:16px;transition:all 0.3s}
@@ -100,6 +119,7 @@ button.choice:hover{border-color:var(--gold);background:rgba(185,138,56,0.1);col
 #click-hint{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);z-index:40;color:var(--text-dim);font-size:16px;letter-spacing:3px;opacity:0;transition:opacity 0.5s;pointer-events:none;animation:pulse 2s infinite}
 #click-hint.visible{opacity:0.6}
 @keyframes pulse{0%,100%{opacity:0.3}50%{opacity:0.7}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 /* —— 左上角汉堡菜单 —— */
 #menu-btn{position:fixed;top:16px;left:16px;z-index:50;font-size:20px;cursor:pointer;background:rgba(15,15,20,0.8);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:6px 12px;color:var(--gold);transition:all 0.2s}
@@ -163,6 +183,7 @@ button.choice:hover{border-color:var(--gold);background:rgba(185,138,56,0.1);col
 <div id="death-overlay"></div>
 <div id="codex-overlay"><button id="codex-close">✕</button><div class="codex-header"><h2>循环图鉴</h2><p>每一種循环，都是一條出路</p><div class="codex-progress" id="codex-progress"></div></div><div id="codex-grid"></div></div>
 <div id="save-overlay"><button id="save-close">✕</button><div class="codex-header"><h2>存档 / 读档</h2><p>选择一个存档位进行保存或读取</p></div><div id="save-slots"></div></div>
+<div id="settlement-overlay"><div id="settlement-content"><div class="settlement-title">循环图鉴 · 结算</div><div class="settlement-subtitle">第一幕 · 电梯循环 · 完</div><div class="settlement-progress-wrap"><span class="settlement-count" id="settlement-count">0</span><span class="settlement-total">/24</span></div><div class="settlement-grid" id="settlement-grid"></div><div class="settlement-actions"><button class="settlement-btn save" id="settlement-save-btn">保存留念</button><button class="settlement-btn continue" id="settlement-continue-btn">继续</button><p class="settlement-warning">继续后将清除全部图鉴，重新开始</p></div></div></div>
 <script>
 const CONFIG={
   loop1:{
@@ -231,7 +252,7 @@ const CONFIG={
 };
 
 const State={loopCount:1,isFirstPlay:true,scene:null,currentFloor:1,displayedFloor:null,typing:false,skipRequested:false,typeTimer:null,textComplete:false,pendingAdvance:null,boyTriggered:false,badgeManEncountered:false,badgeForced:false,heelsIgnored:0,wheelchairActive:false,currentPanel:null,break20Presses:0,_badgeRefuseCount:0,_badgeMeetCount:0,deathLog:new Set()};
-const Save={KEY:'elevator_loop_save_v2',load(){try{const r=localStorage.getItem(this.KEY);if(r){const d=JSON.parse(r);State.loopCount=d.loopCount||1;State.isFirstPlay=d.isFirstPlay!==false;if(d.deathLog){const oldMap={11:8,12:9,13:10,14:11,15:12,16:13,17:14,18:15,19:16,20:17,21:18,22:19,23:20,24:21,25:22,26:23,27:24};const remapped=new Set();for(const id of d.deathLog){remapped.add(oldMap[id]||id);}State.deathLog=remapped;}if(d.badgeMeetCount)State._badgeMeetCount=d.badgeMeetCount;}}catch(e){}},save(){try{localStorage.setItem(this.KEY,JSON.stringify({loopCount:State.loopCount,isFirstPlay:State.isFirstPlay,deathLog:[...State.deathLog],badgeMeetCount:State._badgeMeetCount||0}));}catch(e){}},reset(){try{localStorage.removeItem(this.KEY);}catch(e){}State.loopCount=1;State.isFirstPlay=true;State.deathLog=new Set();State._badgeMeetCount=0;},
+const Save={KEY:'elevator_loop_save_v2',load(){try{const r=localStorage.getItem(this.KEY);if(r){const d=JSON.parse(r);State.loopCount=d.loopCount||1;State.isFirstPlay=d.isFirstPlay!==false;if(d.deathLog){const arr=d.deathLog;const needsRemap=arr.some(id=>id>24);if(needsRemap){const oldMap={11:8,12:9,13:10,14:11,15:12,16:13,17:14,18:15,19:16,20:17,21:18,22:19,23:20,24:21,25:22,26:23,27:24};State.deathLog=new Set(arr.map(id=>oldMap[id]||id));}else{State.deathLog=new Set(arr);}}if(d.badgeMeetCount)State._badgeMeetCount=d.badgeMeetCount;}}catch(e){}},save(){try{localStorage.setItem(this.KEY,JSON.stringify({loopCount:State.loopCount,isFirstPlay:State.isFirstPlay,deathLog:[...State.deathLog],badgeMeetCount:State._badgeMeetCount||0}));}catch(e){}},reset(){try{localStorage.removeItem(this.KEY);}catch(e){}State.loopCount=1;State.isFirstPlay=true;State.deathLog=new Set();State._badgeMeetCount=0;},
   SLOTS_KEY:'elevator_save_slots_v1',
   getSlots(){try{const r=localStorage.getItem(this.SLOTS_KEY);if(r)return JSON.parse(r);}catch(e){}return{auto:null,slot1:null,slot2:null,slot3:null};},
   saveSlot(name){try{const slots=this.getSlots();slots[name]={loopCount:State.loopCount,isFirstPlay:State.isFirstPlay,deathLog:[...State.deathLog],badgeMeetCount:State._badgeMeetCount||0,time:new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})};localStorage.setItem(this.SLOTS_KEY,JSON.stringify(slots));return true;}catch(e){return false;}},
@@ -1205,14 +1226,8 @@ function showEndScreen(){
   typewriterSeq(CONFIG.boyTrigger.endSequence,0,()=>{
     const t=document.createElement('div'); t.className='end-title'; t.textContent=CONFIG.boyTrigger.endText;
     el.narrative.appendChild(t);
-    const b1=document.createElement('button'); b1.className='choice'; b1.textContent='下一幕';
-    b1.onclick=()=>{ Audio.click();
-      clearChoices();
-      typewriter('第二幕 · 敬请期待',()=>{ Save.reset(); location.reload(); });
-    };
-    const b2=document.createElement('button'); b2.className='choice'; b2.textContent='重新开始';
-    b2.onclick=()=>{ Audio.click(); Save.reset(); location.reload(); };
-    el.choices.appendChild(b1); el.choices.appendChild(b2);
+    // Auto-show settlement after 2 seconds
+    setTimeout(function(){ showSettlement(); }, 2000);
   });
 }
 
@@ -1782,6 +1797,21 @@ document.getElementById('codex-close').addEventListener('click',()=>{
 document.getElementById('save-close').addEventListener('click',()=>{
   Audio.click(); hideSavePanel();
 });
+document.getElementById('settlement-save-btn').addEventListener('click',()=>{
+  Audio.click(); saveSettlement();
+});
+document.getElementById('settlement-continue-btn').addEventListener('click',()=>{
+  Audio.click();
+  var btn=document.getElementById('settlement-continue-btn');
+  if(btn.dataset.confirmed){
+    Save.reset(); location.reload();
+  } else {
+    btn.dataset.confirmed='1';
+    btn.textContent='确认清除并重新开始';
+    btn.style.borderColor='var(--blood)';
+    btn.style.color='var(--blood-bright)';
+  }
+});
 document.getElementById('menu-btn').addEventListener('click',(e)=>{
   e.stopPropagation();
   toggleMenu();
@@ -1854,6 +1884,62 @@ function showDeathCodex(){
 }
 function hideDeathCodex(){
   document.getElementById('codex-overlay').classList.remove('visible');
+}
+
+/* --- 结算页面 --- */
+function showSettlement(){
+  var overlay=document.getElementById('settlement-overlay');
+  var grid=document.getElementById('settlement-grid');
+  var count=document.getElementById('settlement-count');
+  var unlocked=State.deathLog.size;
+  count.textContent=unlocked;
+  grid.innerHTML='';
+  for(var i=1;i<=24;i++){
+    var cell=document.createElement('div');
+    var isUnlocked=State.deathLog.has(i);
+    cell.className='codex-cell '+(isUnlocked?'unlocked':'locked');
+    if(isUnlocked){
+      cell.style.backgroundImage="url('images/deaths/death_"+String(i).padStart(2,'0')+".webp')";
+      var ov=document.createElement('div'); ov.className='cell-overlay'; cell.appendChild(ov);
+    }
+    var num=document.createElement('div');
+    num.className='cell-num';
+    num.textContent=String(i).padStart(2,'0');
+    var name=document.createElement('div');
+    name.className='cell-name';
+    name.textContent=isUnlocked?CONFIG.deaths[i]:'？';
+    cell.appendChild(num);
+    cell.appendChild(name);
+    grid.appendChild(cell);
+  }
+  overlay.classList.add('visible');
+}
+function saveSettlement(){
+  var btn=document.getElementById('settlement-save-btn');
+  var originalText=btn.textContent;
+  btn.textContent='生成中...'; btn.disabled=true;
+  var target=document.getElementById('settlement-content');
+  if(typeof html2canvas==='undefined'){
+    btn.textContent='截图库未加载'; 
+    setTimeout(function(){btn.textContent=originalText;btn.disabled=false;},2000);
+    return;
+  }
+  html2canvas(target,{
+    backgroundColor:'#0f0f14',
+    scale:2,
+    useCORS:true,
+    allowTaint:true
+  }).then(function(canvas){
+    var link=document.createElement('a');
+    link.download='大楼-循环图鉴-'+State.deathLog.size+'of24.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    btn.textContent='已保存 ✓';
+    setTimeout(function(){btn.textContent=originalText;btn.disabled=false;},2000);
+  }).catch(function(){
+    btn.textContent='保存失败';
+    setTimeout(function(){btn.textContent=originalText;btn.disabled=false;},2000);
+  });
 }
 
 /* --- 存档/读档面板 --- */
