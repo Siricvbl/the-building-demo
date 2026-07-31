@@ -130,6 +130,9 @@ button.choice:hover{border-color:var(--gold);background:rgba(185,138,56,0.1);col
 #save-close{position:fixed;top:16px;right:16px;z-index:201;font-size:22px;cursor:pointer;background:rgba(15,15,20,0.8);border:1px solid rgba(185,138,56,0.3);border-radius:4px;padding:6px 12px;color:var(--text)}
 #save-close:hover{border-color:var(--gold);color:var(--gold)}
 </style>
+<script>/* preload all game images at page load */
+(function(){var imgs=['characters/char_badge','characters/char_boy','characters/char_coffee','characters/char_elderly','characters/char_hooded','characters/char_susu'];for(var i=1;i<=24;i++){var s=String(i).padStart(2,'0');imgs.push('deaths/death_'+s);}imgs.forEach(function(p){var im=new Image();im.src='images/'+p+'.webp';});})();
+</script>
 </head>
 <body>
 <div id="title-screen"><h1>大楼</h1><p>第一幕 · 电梯循环</p><button id="start-btn">开始游戏</button><button id="codex-btn-title">循环图鉴</button></div>
